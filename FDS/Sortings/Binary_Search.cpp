@@ -4,7 +4,7 @@ using namespace std;
 
 int binarySearch(int arr[], int left, int right, int x){
 	while(left<=right){
-		int mid = left + (right-left)/2;
+		int mid = (left + right)/2;
 		if(arr[mid] == x)
 			return mid;
 		else if(arr[mid] < x)
@@ -53,6 +53,15 @@ int missingNumber(int arr[], int left, int right){
 	}
 	return left;
 }
+
+//find the position of an element in a sorted range that has a value not less than the given value
+int lowerBound(){
+	vector<int> v = {10, 20, 30, 40, 50};
+    // Finding lower bound for value 35 in vector v which is 40
+    return *lower_bound(v.begin(), v.end(), 35);
+
+}
+
 
 int main() {
 	int num;

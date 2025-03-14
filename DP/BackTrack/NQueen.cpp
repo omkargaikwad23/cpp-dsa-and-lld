@@ -3,6 +3,7 @@ using namespace std;
 
 class Solution {
 public:
+    Solution() {};
     vector<vector<string>> solveNQueens(int n) {
         vector<vector<string>> result;
         vector<string> temp(n, string(n, '.'));
@@ -41,7 +42,14 @@ public:
 
 int main()
 {
-    
+    Solution s;
+    vector<vector<string>> result = s.solveNQueens(4);
+    for (const auto& solution : result) {
+        for (const auto& row : solution) {
+            cout << row << endl;
+        }
+        cout << endl;
+    }
     
     return 0;
 }

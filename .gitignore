@@ -2,3 +2,9 @@
 /.cph
 /.vscode
 /Solution.cpp
+*.exe
+*.out
+*.o
+*.obj
+.DS_Store
+FDS/Sortings/tempCodeRunnerFile.cpp

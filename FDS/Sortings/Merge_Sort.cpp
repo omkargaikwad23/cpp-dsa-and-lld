@@ -1,83 +1,66 @@
-#include <iostream>
+#include <bits/stdc++.h>
 using namespace std;
-/* 
-merge sort sorting algorithm
-time: O(nlog(n)) in all cases
-space: O(n)
-*/
 
-void merge(int *Arr, int start, int mid, int end) {
-	
-	int temp[end - start + 1];  // create a temp array
+void merge(vector<int> &arr, int low, int mid, int high) {
+    vector<int> temp; // temporary array
+    int left = low;      // starting index of left half of arr
+    int right = mid + 1;   // starting index of right half of arr
 
-	int i = start; // starting index for left subarray
-	int j = mid+1; // starting index for right subarray
-	int k = 0;		 // starting index for temporary arr 
+    //storing elements in the temporary array in a sorted manner//
 
-	// traverse both arrays and in each iteration add smaller of both elements in temp 
-	while(i <= mid && j <= end) {
-		if(Arr[i] <= Arr[j]) {
-			temp[k] = Arr[i++];
-		}
-		else {
-			temp[k] = Arr[j++];
-		}
-		k++;
-	}
+    while (left <= mid && right <= high) {
+        if (arr[left] <= arr[right]) {
+            temp.push_back(arr[left]);
+            left++;
+        }
+        else {
+            temp.push_back(arr[right]);
+            right++;
+        }
+    }
 
-	// add elements left (remaining) in the first interval 
-	while(i <= mid) {
-		temp[k++] = Arr[i++];
-	}
+    // if elements on the left half are still left //
 
-	// add elements left in the second interval 
-	while(j <= end) {
-		temp[k++] = Arr[j++];
-	}
+    while (left <= mid) {
+        temp.push_back(arr[left]);
+        left++;
+    }
 
-	// copy temp to original interval
-	for(i = start; i <= end; i++) {
-		Arr[i] = temp[i - start];
-	}
+    //  if elements on the right half are still left //
+    while (right <= high) {
+        temp.push_back(arr[right]);
+        right++;
+    }
+
+    // transfering all elements from temporary to arr //
+    for (int i = low; i <= high; i++) {
+        arr[i] = temp[i - low];
+    }
 }
 
-// Arr is an array of integer type
-// start and end are the starting and ending index of current interval of Arr
-void mergeSort(int *Arr, int start, int end) {
-
-	if(start < end) {
-		int mid = (start + end) / 2;
-		mergeSort(Arr, start, mid);
-		mergeSort(Arr, mid+1, end);
-		merge(Arr, start, mid, end);
-	}
+void mergeSort(vector<int> &arr, int low, int high) {
+    if (low >= high) return;
+    int mid = (low + high) / 2 ;
+    mergeSort(arr, low, mid);  // left half
+    mergeSort(arr, mid + 1, high); // right half
+    merge(arr, low, mid, high);  // merging sorted halves
 }
-
-
 
 int main() {
-	int n;
-	cout << "Enter size of an array: ";
-	cin >> n;
-	int myarr[n];
-	cout << "Enter " << n << " random elements :";
-	for(int i=0; i<n; i++)
-	{
-		cin >> myarr[i];
-	}
 
-	cout << "====Before Merge Sort==== :" << endl;
-	for(int i=0; i<n; i++)
-	{
-		cout << myarr[i] << " ";
-	}
+    vector<int> arr = {9, 4, 7, 6, 3, 1, 5}  ;
+    int n = 7;
 
-	mergeSort(myarr,0,n);
-
-	cout << "\n====After Merge Sort ==== :" << endl;
-	for(int i=0; i<n; i++)
-	{
-		cout << myarr[i] << " ";
-	}
-	return 0;
+    cout << "Before Sorting Array: " << endl;
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " "  ;
+    }
+    cout << endl;
+    mergeSort(arr, 0, n - 1);
+    cout << "After Sorting Array: " << endl;
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " "  ;
+    }
+    cout << endl;
+    return 0 ;
 }

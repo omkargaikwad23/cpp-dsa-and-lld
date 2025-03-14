@@ -30,6 +30,32 @@ class RecursiveDFS {
         }
         return false;
     }
+
+    bool dfs(int node, int parent, vector<vector<int>>& adj, unordered_set<int> &seen) {
+        if(seen.find(node) != seen.end()) return false;
+        seen.insert(node);
+        
+        for(auto nextNode : adj[node]) {
+            if(nextNode == parent) continue;
+            if(!dfs(nextNode, node, adj, seen))
+                return false;
+        }
+        return true;
+    }
+
+    bool validTree(int n, vector<vector<int>>& edges) {
+        if(edges.size() < n-1) return false;
+        
+        vector<vector<int>> adj(n);
+        for(auto &edge: edges) {
+            adj[edge[0]].push_back(edge[1]);
+            adj[edge[1]].push_back(edge[0]);
+        }
+        
+        unordered_set<int> seen;
+        
+        return dfs(0, -1, adj, seen) && seen.size() == n;
+    }
 };
 
 class IterativeBFS {

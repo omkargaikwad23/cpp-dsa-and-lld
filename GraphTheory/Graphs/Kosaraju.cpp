@@ -113,6 +113,76 @@ int main(){
 }
 
 /*
+
+Here's how the original graph looks:
+    0 → 1
+    ↑   ↓
+    2 ←
+    ↓
+    3 → 4 → 5
+    ↑       ↓
+    ← ← ← ← ←
+
+Start DFS from node 0:
+Visit 0, go to 1.
+Visit 1, go to 2.
+Visit 2, go to 0 (already visited), go to 3.
+Visit 3, go to 4.
+Visit 4, go to 5.
+Visit 5, go to 3 (already visited).
+Push 5 to stack.
+Push 4 to stack.
+Push 3 to stack.
+Push 2 to stack.
+Push 1 to stack.
+Push 0 to stack.
+
+Stack after first DFS: [5, 4, 3, 2, 1, 0]
+
+Here's how the transposed graph looks:
+    0 ← 1
+    ↓   ↑
+    2 →
+    ↑
+    3 ← 4 ← 5
+    ↓       ↑
+    → → → → →
+
+Step 3: Second DFS (dfs2)
+We perform DFS on the transposed graph by popping nodes from the stack.
+
+Pop 0 from stack:
+
+Start DFS from node 0:
+Visit 0, go to 2.
+Visit 2, go to 1.
+Visit 1, go to 0 (already visited).
+SCC found: {0, 2, 1}
+Pop 1 from stack (already visited).
+
+Pop 2 from stack (already visited).
+
+Pop 3 from stack:
+
+Start DFS from node 3:
+Visit 3, go to 5.
+Visit 5, go to 4.
+Visit 4, go to 3 (already visited).
+SCC found: {3, 5, 4}
+Pop 4 from stack (already visited).
+
+Pop 5 from stack (already visited).
+
+    SCC 1: {0, 2, 1}
+    0 → 1
+    ↑   ↓
+    2 ←
+
+    SCC 2: {3, 5, 4}
+    3 → 4 → 5
+    ↑       ↓
+    ← ← ← ← ←
+
 Number of strongly connected components:2
 SCCs: 
 0 2 1
