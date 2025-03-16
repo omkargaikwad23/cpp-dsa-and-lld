@@ -1,0 +1,4 @@
+10:00 <alice> Hi! What's up?
+10:01 <bob> Hey
+10:03 <alice> Dinner?
+10:04 <john> I'm down! But only if it isn't vegan.
