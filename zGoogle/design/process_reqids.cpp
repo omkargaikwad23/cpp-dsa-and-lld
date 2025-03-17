@@ -22,12 +22,13 @@ req4 started at 5 and ended at 6
 req3 started at 4 and ended at 7
 req2 started at 3 and ended at 8
 */
-
-#include <string>
 #include <iostream>
+#include <string>
 #include <map>
-#include <fstream>
 #include <vector>
+#include <fstream>
+#include <algorithm>
+
 using namespace std;
 
 struct Log {
@@ -37,57 +38,51 @@ struct Log {
 };
 
 class ProcessLogRequests {
-    map<string, int> reqLog;
-    vector<Log> logs;
+    map<string, int> reqLog;  // Map to store start times temporarily
+    vector<Log> logs;         // Vector to store completed logs
+
 public:
-    ProcessLogRequests() {}
-
-
     void processLogs(const string &filepath) {
-
         ifstream inFile(filepath);
         if (!inFile.is_open()) {
-            cout << "Failed to open file: " << filepath << endl;
+            cerr << "Failed to open file: " << filepath << endl;
             return;
         }
 
         string line;
-        while(getline(inFile, line)) {
-            if(line == "") continue;
-            int openIndex = line.find('(');
-            int commaIndex = line.find(',');
-            
-            int timestamp = stoi(line.substr(openIndex + 1, commaIndex - 1 - openIndex));
-            string reqId = line.substr(commaIndex + 2); //skip space
-            reqId.pop_back(); // remove closing bracked
+        while (getline(inFile, line)) {
+            if (line.empty()) continue;
 
-            if(line[0] == 'S') {
+            size_t openIndex = line.find('(');
+            size_t commaIndex = line.find(',');
+
+            int timestamp = stoi(line.substr(openIndex + 1, commaIndex - openIndex - 1));
+            string reqId = line.substr(commaIndex + 2);
+            reqId.pop_back();  // Remove closing bracket
+
+            if (line[0] == 'S') {  // line represents Start
                 reqLog[reqId] = timestamp;
-            }
-            else {
+            } else if (line[0] == 'F') {  // line represents Finish
                 int startTime = reqLog[reqId];
                 int endTime = timestamp;
-
                 logs.push_back(Log{endTime, startTime, reqId});
             }
         }
-    }
-
-    bool compareByEndTime(const Log& l1, const Log& l2) {
-        return l1.endTime <= l2.endTime;
+        inFile.close();
     }
 
     void printLogs() {
         sort(logs.begin(), logs.end(), [](const Log &l1, const Log &l2) {
             return l1.endTime < l2.endTime;
         });
-        for(const auto &log : logs) {
+
+        for (const auto &log : logs) {
             cout << log.reqId << " started at " << log.startTime << " and ended at " << log.endTime << endl;
-        }  
+        }
     }
 };
 
-int main(){ 
+int main() {
     string path = "/Users/omkar/Dropbox/System-Design-DSA/zGoogle/design/requestid_logs.txt";
     ProcessLogRequests plr;
     plr.processLogs(path);
