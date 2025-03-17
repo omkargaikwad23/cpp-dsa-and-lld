@@ -12,66 +12,63 @@ For example -
 8888 - 8 is contained, we can say this till we get one more input in the stream.
 */
 
-
 #include <iostream>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
+#include <climits>
 
 using namespace std;
 
-// Function to find contained numbers in a given chunk of size 'k'
-vector<int> findContainedNumbers(const vector<int>& chunk, const unordered_set<int>& prevChunkNumbers) {
-    unordered_map<int, int> countMap; // Count occurrences in the current chunk
-    unordered_set<int> containedNumbers;
+class DataStream {
+private:
+    int counter, lastProcessedNumber, k;
+    vector<int> result;  // Store the "contained" numbers
 
-    // Count occurrences of each number in the chunk
-    for (int num : chunk) {
-        countMap[num]++;
+public:
+    // Constructor to initialize the DataStream with size k
+    DataStream(int k) {
+        this->k = k;
+        this->counter = 0;
+        this->lastProcessedNumber = INT_MIN;  // C++ equivalent for Integer.MIN_VALUE
     }
 
-    // Check if the numbers are contained
-    for (auto& entry : countMap) {
-        int num = entry.first;
-        if (prevChunkNumbers.find(num) == prevChunkNumbers.end()) { // Should not be in previous chunk
-            containedNumbers.insert(num);
+    // Add a number to the current contained numbers if applicable
+    void addToContainedNumbers(int streamInput) {
+        counter = (counter + 1) % (k + 1);
+        
+        if (counter == 0) {
+            // If the last processed number is the same as the current stream input, remove it
+            if (!result.empty() && result.back() == streamInput) {
+                result.pop_back();
+            }
+            counter++;  // Increment counter for next iteration
+        }
+
+        // If the current stream input is greater than the last processed number, add it to the result
+        if (streamInput > lastProcessedNumber) {
+            lastProcessedNumber = streamInput;
+            result.push_back(streamInput);
         }
     }
 
-    // Convert to vector for returning
-    return vector<int>(containedNumbers.begin(), containedNumbers.end());
-}
+    // Print the current contained numbers
+    void printCurrentContainedNumbers() {
+        cout << "Contained numbers up to current data stream: ";
+        for (int num : result) {
+            cout << num << " ";
+        }
+        cout << endl;
+    }
+};
 
 int main() {
-    vector<int> stream = {1, 1, 2, 2,  2, 3, 3,  3, 3,  4, 5, 5, 6,  6, 7, 7, 7,  8, 8, 8, 8}; 
-    int k = 4;  // Size of each chunk
+    DataStream ds(4);  // Initialize DataStream with k = 4
+    int input[] = {1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 8};
+    int size = sizeof(input) / sizeof(input[0]);
 
-    unordered_set<int> prevChunkNumbers; // Store numbers from the previous chunk
-
-    // Process stream in chunks of size k
-    for (size_t i = 0; i < stream.size(); i += k) {
-        vector<int> chunk;
-        unordered_set<int> currentChunkNumbers; // Numbers in current chunk
-
-        // Extract the chunk
-        for (size_t j = i; j < i + k && j < stream.size(); j++) {
-            chunk.push_back(stream[j]);
-            currentChunkNumbers.insert(stream[j]);
-        }
-
-        // Find contained numbers in this chunk
-        vector<int> contained = findContainedNumbers(chunk, prevChunkNumbers);
-
-        // Print the contained numbers for this chunk
-        cout << "Chunk: ";
-        for (int num : chunk) cout << num << " ";
-        cout << "\nContained Numbers: ";
-        for (int num : contained) cout << num << " ";
-        cout << "\n\n";
-
-        // Update prevChunkNumbers for next iteration
-        prevChunkNumbers = currentChunkNumbers;
+    for (int i = 0; i < size; ++i) {
+        ds.addToContainedNumbers(input[i]);
     }
+    ds.printCurrentContainedNumbers();
 
     return 0;
 }
