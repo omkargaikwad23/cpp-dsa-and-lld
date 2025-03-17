@@ -39,7 +39,7 @@ void KMPSearch(char* pat, char* txt)
 	}
 }
 
-// Fills lps[] for given patttern pat[0..M-1]
+// Fills lps[] (Longest Prefix Suffix) for given patttern pat[0..M-1]
 void computeLPSArray(char* pat, int M, int* lps)
 {
 	// length of the previous longest prefix suffix

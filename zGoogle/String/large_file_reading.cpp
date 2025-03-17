@@ -25,7 +25,8 @@ void processFile(const string &inputFile, const string &bannedFile, const string
     
     ifstream inFile(inputFile);
     ofstream outFile(outputFile);
-    
+
+    if(!inFile.is_open()) return;    
     string line, word;
 
     while (getline(inFile, line)) {  // Read file line by line
