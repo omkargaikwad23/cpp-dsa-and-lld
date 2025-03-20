@@ -10,70 +10,63 @@ Eg: [3, 1, 1, 1, 7] -> removing 7 -> True. (3) & (1, 1, 1)
 Follow-up: if the array is circular.
 Eg: [1, 3, 1, 1, 7] -> removing 7 -> True, (1, 1, 1) & (3)
 
-provide well written C++ solution for both the google interview questions
 */
 
 #include <iostream>
 #include <vector>
-#include <unordered_set>
-using namespace std;
+#include <numeric> // for std::accumulate
 
-// Function to check if an array can be partitioned into two continuous parts with equal sum
-bool canPartitionLinear(vector<int>& arr) {
-    int totalSum = 0;
-    for (int num : arr) totalSum += num;
+// Use individual using statements for specific functions or objects
+using std::vector;
+using std::accumulate;
+using std::cout;
+using std::endl;
+using std::boolalpha;
 
-    // Try removing each element and check for partitioning
-    for (size_t i = 0; i < arr.size(); i++) {
-        int newSum = totalSum - arr[i]; // Sum after removing element
-        if (newSum % 2 != 0) continue;  // Must be even to split equally
-
-        int halfSum = newSum / 2, currentSum = 0;
-        for (size_t j = 0; j < arr.size(); j++) {
-            if (j == i) continue; // Skip removed element
-            currentSum += arr[j];
-            if (currentSum == halfSum) return true; // Found valid partition
-        }
+bool canSplitNonCircular(const vector<int>& arr, int index) {
+    int totalSum = accumulate(arr.begin(), arr.end(), 0) - arr[index];
+    if (totalSum % 2 != 0) return false;
+    int target = totalSum / 2;
+    
+    int currentSum = 0;
+    for (int i = 0; i < arr.size(); ++i) {
+        if (i == index) continue;
+        currentSum += arr[i];
+        if (currentSum == target) return true;
+        if (currentSum > target) return false;
     }
     return false;
 }
 
-bool canPartitionCircular(vector<int>& arr) {
+bool canSplitCircular(vector<int>& arr, int index) {
+    int totalSum = accumulate(arr.begin(), arr.end(), 0) - arr[index];
     int n = arr.size();
-    int totalSum = 0;
-
-    for (int num : arr) totalSum += num;  // Step 1: Compute total sum
-
-    for (int i = 0; i < n; i++) {
-        int newSum = totalSum - arr[i];  // Step 2: Remove arr[i]
-        if (newSum % 2 != 0) continue;  // If sum is odd, no valid partition
-        int halfSum = newSum / 2;
-
-        // Step 3: Check if there's a continuous subarray sum == halfSum
-        unordered_set<int> prefixSums;
-        int currentSum = 0;
-
-        // Step 4: Sliding window in circular array (max `2n - 1` iterations)
-        for (int j = 0; j < 2 * n - 1; j++) {
-            int idx = j % n;  // Circular index
-            if (idx == i) continue;  // Skip removed element
-            
-            currentSum += arr[idx];
-
-            // If we found halfSum directly
-            if (currentSum == halfSum) return true;
-
-            // If currentSum - halfSum exists in prefixSums, we found a valid range
-            if (prefixSums.count(currentSum - halfSum)) return true;
-
-            // Insert current prefix sum
-            prefixSums.insert(currentSum);
-
-            // To maintain a valid window, remove old elements
-            if (j >= n - 1) {
-                int removeIdx = (j - (n - 1)) % n;
-                if (removeIdx != i) currentSum -= arr[removeIdx];
+    if (totalSum % 2 != 0) return false;
+    int target = totalSum / 2;
+    
+    int currentSum = 0;
+    for (int start = 0, end = 0, count = 0; count < 2 * (n - 1); ++end, ++count) {
+        if (arr[end % n] == index) continue;
+        currentSum += arr[end % n];
+        while (currentSum > target) {
+            if (start % n == index) {
+                ++start;
+                continue;
             }
+            currentSum -= arr[start++ % n];
+        }
+        if (currentSum == target) return true;
+    }
+    
+    return false;
+}
+
+bool canSplitArray(vector<int>& arr, bool isCircular) {
+    for (int i = 0; i < arr.size(); ++i) {
+        if (isCircular) {
+            if (canSplitCircular(arr, i)) return true;
+        } else {
+            if (canSplitNonCircular(arr, i)) return true;
         }
     }
     return false;
@@ -82,12 +75,10 @@ bool canPartitionCircular(vector<int>& arr) {
 int main() {
     vector<int> arr1 = {3, 1, 1, 1, 7};
     vector<int> arr2 = {1, 3, 1, 1, 7};
-
-    cout << "Linear case 1: " << (canPartitionLinear(arr1) ? "True" : "False") << endl;
-    cout << "Linear case 2: " << (canPartitionLinear(arr2) ? "True" : "False") << endl;
-
-    cout << "Circular case 1: " << (canPartitionCircular(arr1) ? "True" : "False") << endl;
-    cout << "Circular case 2: " << (canPartitionCircular(arr2) ? "True" : "False") << endl;
-
+    
+    cout << boolalpha; // Print 'true' or 'false' instead of 1 or 0.
+    cout << "Non-circular result for [3, 1, 1, 1, 7]: " << canSplitArray(arr1, false) << endl;
+    cout << "Circular result for [1, 3, 1, 1, 7]: " << canSplitArray(arr2, true) << endl;
+    
     return 0;
 }

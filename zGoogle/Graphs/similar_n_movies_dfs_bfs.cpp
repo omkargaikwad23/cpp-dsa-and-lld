@@ -30,6 +30,10 @@ E->5
 
 input=(A,2) -> means find 2 movies with highest rating similar to movie A.
 output= D,C -> as A is similar to B and B is similar to C and C is similar to D and A is similar to E means A,B,C,D,E are similar movies and among them D and C have highest rating , hence the above answer.
+
+1. create adj list
+2. perform bfs and get the connected component
+3. sort the component
 */
 
 
