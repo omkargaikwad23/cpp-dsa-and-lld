@@ -1,6 +1,4 @@
 
-Given a list of strings we need to output the list of ambigram words
-eg. axe, pod are ambigram words because if we rotate these words 180 degrees, they will remain the same.
 
 
 
@@ -13,12 +11,9 @@ https://leetcode.com/discuss/interview-question/6479105/Google-L5-interview-Expe
 Problem: Design an Ad Server that supports two operations:
 insertAd(content, score) – Inserts an ad with given content and score.
 serveAd() – Serves the best ad (highest score) while ensuring the same ad is not served consecutively.
+Approach: Used priority queues for ad retrieval and a cache to track previously served ads.
 
 ------------------
-Phone Screen:
-Problem: Number of ways to make a mobile lock pattern with an n x n grid.
-Approach: DFS + Backtracking
-
 
 Onsite Interviews:
 1st Onsite – Binary Search + DFS
@@ -26,79 +21,12 @@ Problem: Smallest Rectangle Enclosing Black Pixels
 Approach: Used binary search and DFS to efficiently find the smallest rectangle enclosing the black pixels.
 
 
-2nd Onsite – System Design (Ad Server)
-Problem: Design an Ad Server that supports two operations:
-
-
-insertAd(content, score) – Inserts an ad with given content and score.
-serveAd() – Serves the best ad (highest score) while ensuring the same ad is not served consecutively.
-Approach: Used priority queues for ad retrieval and a cache to track previously served ads.
 3rd Onsite – Max Sum Subarray with Constraints
 Problem: Given an array of integers nums, find two indices i and j such that i ≤ j, nums[i] = nums[j], and the sum of nums[i] to nums[j] is maximized.
 Approach: Used prefix sums and a hashmap to track indices of repeating elements while maintaining the maximum sum.
 
 
-Here’s my solution for this problem:
 
-
-
-#include <bits/stdc++.h>
-using namespace std;
-
-int pr(vector<int>&pref,int i,int j){
-    if(i>0)
-    return pref[j]-pref[i-1];
-    return pref[j];
-}
-int main(){
-    int t;
-    cin>>t;
-    while(t--){
-        int n ;
-        cin>>n;
-        vector<int>v(n);
-        int maxVal = INT_MIN;
-        int maxi = -1;
-        int maxj = -1;
-        for(int i=0;i<n;i++)cin>>v[i];
-        vector<int>prefix(n);
-        unordered_map<int,vector<int>>mp;
-        for(int i=0;i<n;i++){
-            if(i>0)prefix[i]=prefix[i-1];
-            prefix[i]+=v[i];
-            mp[v[i]].push_back(i);
-        }
-        for(auto k:mp){
-            int key = k.first;
-            vector<int> val = k.second;
-            int ci = val[0], cj = val[0],cm = v[val[0]];
-            for(int i=0;i<val.size();i++){
-                 if(i){
-                    int sums =pr(prefix,val[i-1],val[i]);
-                    if(sums<v[val[i]]){
-                        ci = val[i];
-                        cj = val[i];
-                        cm = v[val[i]];
-                    }else{
-                        cm = sums;
-                        cj = val[i];
-                    }
-                 }
-                 if(maxVal<cm){
-                    maxVal=cm;
-                    maxi = ci;
-                    maxj = cj;
-                 }
-            }
-        
-        }
-
-        cout<<maxi<<" "<<maxj<<" "<<maxVal<<endl;
-    }
-
-    return 0;
-
-}
 ------------------
 https://leetcode.com/discuss/interview-question/6476739/Google-L4-Interview-Experience
 
@@ -151,26 +79,23 @@ For example:
 
 a: [2.5, 7.5), [9.0, 10.4), b: [4.3, 9.3), [9.5, 11.0) → Answer: [2.5, 4.3), [9.3, 9.5)
 
-------------------------------------------------------
 
-https://leetcode.com/discuss/interview-question/5131934/google-screening-question
-
-Given a stream of numbers which are sorted. Same integer is/can be repeated itself any number of times.
-When dividing this stream into strings/smaller arrays of size k find out numbers which are contained.
-Concept of contained goes like this, contained number is a number which is not part of any other divided subtrings/sub arrays.
-
-
-For example -
-1122 - 1 is contained
-2233 - none, as 2 and 3 both spill in the next array
-3333 - none as 3 was a part of prev array
-4556 - 4, 5 are contained
-6777 - 7 is contained
-8888 - 8 is contained, we can say this till we get one more input in the stream.
-
-
-Came up with n*2 approach using hashset, interview seeked a linear solution. Which was possible with using a class variable.
 
 ------------------------------------------------------
 
-------------------------------------------------------
+https://leetcode.com/discuss/post/6244752/google-l3-interview-experience-questions-2utz/
+
+Telephone screening round : 
+Given an array of positive elements, you can start at any element, at every element you have a choice to take it or skip it.
+If you take it the score will be increased by arr[i] and your next position will be i + arr[i], we have to find the max score that we can get
+
+
+Onsite round 2 : Find task completion time
+There will be some tasks, and each task can have one or more subtasks, by default all tasks have completion time 1 unit, but the comp_time of a parent task is the x if all subtasks have time x, otherwise it is their sum, we have to find the total completion time
+
+Onsite round 3 : Play songs in order
+There are n people and each person has a specific order in which the songs should be played,
+P1 : a,b,c
+P2. : b, e , f 
+We have to find if we can find a valid order, if there is a valid order we have to return that, this is a topological ordering problem
+

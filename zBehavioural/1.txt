@@ -1,3 +1,12 @@
+Tell me about a time when your manager set reasonable demands. Follow up asked for a situation with unreasonable demands.
+Tell me about one of the biggest accomplishments in your career so far.
+Tell me about a time when you faced a challenging situation at work.
+How do you manage multiple priorities, do you like to be in a place where priorities keep changing or prefer doing the same thing repeatedly.
+Tell me about a time you set a goal for yourself and how you approached achieving it
+Describe one positive leadership/managerial style you liked from one of your previous managers and how did that affect your workstyle
+
+
+
 https://leetcode.com/discuss/post/6246228/google-l3-phone-screen-problems-by-the_a-tbek/
 
 Questions:
@@ -43,3 +52,6 @@ I will keep this post updated with further process.
 Q. https://leetcode.com/discuss/post/6497121/google-phone-screen-by-anonymous_user-vs6o/
 What date is N days after date D, for example, What is the date 100 days after 2015-08-18.
 
+
+
+https://leetcode.com/discuss/post/5963463/googlyness-frequently-asked-questions-by-55sh/
