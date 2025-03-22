@@ -19,7 +19,6 @@ k < 0 return 0;
 if(k > 0)
     2. move -> k-1 and add dist travelled
 
-
 Time: O(n * k)
 */
 
@@ -36,7 +35,10 @@ int getMaxDistance(vector<int> &A, int index, int energy, int maxEnergy) {
     if (memo[index][energy] != -1) return memo[index][energy];
 
     // Case 1: Move forward, consume 1 energy, and add current day's wind speed to the distance
-    int moveDistance = A[index] + getMaxDistance(A, index + 1, energy - 1, maxEnergy);
+    int moveDistance = 0;
+
+    if(energy > 0)
+        moveDistance = A[index] + getMaxDistance(A, index + 1, energy - 1, maxEnergy);
 
     // Case 2: Stay put, regain 1 energy (but not exceeding maxEnergy)
     int restoredEnergy = min(energy + 1, maxEnergy);
@@ -47,15 +49,12 @@ int getMaxDistance(vector<int> &A, int index, int energy, int maxEnergy) {
 }
 
 int main() {
-    int n = 5;
-    vector<int> A = {2, 3, 4, 5, 3};
-    int k = 3; // Maximum initial energy
+    vector<int> A = {2, 3, 4, 5};
+    int k = 1; // Maximum initial energy
     
-    memo.assign(n, vector<int>(k+1, -1));
+    memo.assign(A.size(), vector<int>(k+1, -1));
 
     int maxDistance = getMaxDistance(A, 0, k, k);
    
     cout << "Maximum distance traveled: " << maxDistance << endl;
 }
-
-
