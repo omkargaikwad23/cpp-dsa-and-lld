@@ -1,4 +1,6 @@
 /*
+https://leetcode.com/discuss/post/5359320/google-l3-onsite-second-round-by-anonymo-d5l7/
+
 given 3 sorted arrays (A,B,C) each of size n;
 and an integer D;
 

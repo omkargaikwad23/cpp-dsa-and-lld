@@ -49,7 +49,7 @@ struct DSU {
         if(rank[u] < rank[v]) 
             swap(u, v);
         
-        parent[v] = u;
+        parent[v] = u; // rank[v] > rank[u]
         if(rank[u] == rank[v])
             rank[u]++;
     }
