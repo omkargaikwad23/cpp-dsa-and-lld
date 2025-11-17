@@ -33,7 +33,6 @@ bool dfs(int u, vector<bool>& visited, vector<bool>& col, vector<int> adj[]){
 
 int main()
 {
-    IOS
     int n, m;
     cin >> n >> m;
     vector<int> adj[n+1];
