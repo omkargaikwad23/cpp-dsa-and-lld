@@ -86,15 +86,7 @@ public:
         root = new Node();
     }
 
-    /*
-     * Insert a word into the Trie
-     * Algorithm:
-     * 1. Start from root
-     * 2. For each character in the word:
-     *    - If character doesn't exist, create new node
-     *    - Move to the next node
-     * 3. Mark the last node as end of word
-     */
+
     void insertWord(string word) {
         Node* curr = root;
         for(int i = 0; i < word.length(); i++) {
