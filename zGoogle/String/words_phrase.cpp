@@ -6,31 +6,26 @@
 using namespace std;
 
 /*
-Given two strings s1 and s2, find out if they only differ by the insertion of a phrase.
+Given two strings s1 and s2, find out if they only differ by the insertion of phrase(s).
 
+The algorithm checks if one string is a subsequence of the other (all words appear in same order).
+This handles BOTH single and multiple phrase insertions.
 
-Example:
-
-
+Example 1: Single phrase insertion
 The boy goes to the hospital
 The cute little boy goes to the hospital
-'cute litte' is the added phrase everything else is the same so return True
+'cute little' is the added phrase, everything else is the same -> return True
 
+Example 2: Multiple phrase insertions
+The boy goes to the hospital
+The cute little boy goes to the nice hospital
+'cute little' and 'nice' are added phrases -> return True
 
-Example:
-
-
+Example 3: Not just insertion (words changed)
 The boy is nice.
 The girl is nice.
--> Return False
+'boy' changed to 'girl', not just insertion -> return False
 */
-
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-
-using namespace std;
 
 bool isSubsequence(const vector<string>& small, const vector<string>& large) {
     size_t i = 0, j = 0;
@@ -60,13 +55,25 @@ bool differsByInsertion(const string& s1, const string& s2) {
 }
 
 int main() {
+    // Example 1: Single phrase insertion
     string s1 = "The cute little boy goes to the hospital";
     string s2 = "The boy goes to the hospital";
-    cout << (differsByInsertion(s1, s2) ? "True" : "False") << endl;
+    cout << "Example 1 (single phrase): " << (differsByInsertion(s1, s2) ? "True" : "False") << endl;
 
-    string s3 = "The boy is nice.";
-    string s4 = "The girl is nice.";
-    cout << (differsByInsertion(s3, s4) ? "True" : "False") << endl;
+    // Example 2: Multiple phrase insertions
+    string s3 = "The cute little boy goes to the nice hospital";
+    string s4 = "The boy goes to the hospital";
+    cout << "Example 2 (multiple phrases): " << (differsByInsertion(s3, s4) ? "True" : "False") << endl;
+    
+    // Example 3: Words changed (not just insertion)
+    string s5 = "The boy is nice.";
+    string s6 = "The girl is nice.";
+    cout << "Example 3 (word changed): " << (differsByInsertion(s5, s6) ? "True" : "False") << endl;
+    
+    // Example 4: Multiple insertions at different positions
+    string s7 = "The quick brown fox jumps over the lazy dog";
+    string s8 = "The fox jumps over the dog";
+    cout << "Example 4 (multiple phrases): " << (differsByInsertion(s7, s8) ? "True" : "False") << endl;
     
     return 0;
 }

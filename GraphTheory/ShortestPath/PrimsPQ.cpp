@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
 using namespace std;
 
 /*
@@ -35,89 +38,80 @@ using namespace std;
  * - Network design (minimum cost to connect all nodes)
  * - Cluster analysis
  * - Approximation algorithms for NP-hard problems
+ * 
+ * INPUT FORMAT:
+ * - Adjacency list: adj[u] = vector of {neighbor, weight} pairs
+ * - Graph is undirected: if (u, v, w) exists, (v, u, w) also exists
  */
 
-class Prims {
-    int N;  // Number of vertices
-    vector<pair<int, int>> *adj;  // Adjacency list: {neighbor, weight}
+/*
+ * Find Minimum Spanning Tree using Prim's algorithm
+ * 
+ * @param adj: Adjacency list representation of undirected graph
+ *             adj[u] = vector of {neighbor, weight} pairs
+ * @param V: Number of vertices
+ * 
+ * Key difference from Dijkstra's:
+ * - weight[v] stores minimum edge weight to connect v to MST (not path distance)
+ * - We minimize edge weight, not cumulative path cost
+ */
+void findMST(vector<vector<pair<int, int>>> &adj, int V) {
+    // Min-heap: {minimum_edge_weight_to_vertex, vertex}
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
 
-public:
-    Prims(int N) {
-        this->N = N;
-        adj = new vector<pair<int, int>>[N];
-    }
+    vector<bool> visited(V, false);
+    int edgeCount = 0, minCostSum = 0;
+    vector<int> parent(V, -1);      // parent[i] = vertex that connects i to MST
+    vector<int> weight(V, INT_MAX); // weight[i] = minimum edge weight to connect i to MST
 
-    // Add undirected edge between u and v with weight w
-    void addEdge(int u, int v, int w) {
-        adj[u].push_back({v, w});
-        adj[v].push_back({u, w});
-    }
+    // Start with vertex 0 as root
+    pq.push({0, 0}); // {weight, nodeIndex}
+    weight[0] = 0;
 
-    /*
-     * Find Minimum Spanning Tree using Prim's algorithm
-     * 
-     * Key difference from Dijkstra's:
-     * - weight[v] stores minimum edge weight to connect v to MST (not path distance)
-     * - We minimize edge weight, not cumulative path cost
-     */
-    void findMST() {
-        // Min-heap: {minimum_edge_weight_to_vertex, vertex}
-        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    while (!pq.empty() && edgeCount != V - 1) {
+        int minWeight = pq.top().first;
+        int nodeIndex = pq.top().second;
+        pq.pop();
 
-        vector<bool> visited(N, false);
-        int edgeCount = 0, minCostSum = 0;
-        vector<int> parent(N, -1);      // parent[i] = vertex that connects i to MST
-        vector<int> weight(N, INT_MAX); // weight[i] = minimum edge weight to connect i to MST
+        // Skip stale entries (already found better edge to this vertex)
+        if (visited[nodeIndex] || weight[nodeIndex] < minWeight)
+            continue;
 
-        // Start with vertex 0 as root
-        pq.push({0, 0});
-        weight[0] = 0;
+        // Add this vertex to MST
+        visited[nodeIndex] = true;
+        minCostSum += minWeight;
+        
+        // Count edge only if it's not the root vertex
+        if (parent[nodeIndex] != -1) {
+            edgeCount++;
+        }
 
-        while (!pq.empty() && edgeCount != N - 1) {
-            int minWeight = pq.top().first;
-            int nodeIndex = pq.top().second;
-            pq.pop();
-
-            // Skip stale entries (already found better edge to this vertex)
-            if (visited[nodeIndex] || weight[nodeIndex] < minWeight)
-                continue;
-
-            // Add this vertex to MST
-            visited[nodeIndex] = true;
-            minCostSum += minWeight;
+        // Relax edges: Update minimum edge weight to connect neighbors to MST
+        for (auto& edge : adj[nodeIndex]) {
+            int to = edge.first;
+            int cost = edge.second;
             
-            // Count edge only if it's not the root vertex
-            if (parent[nodeIndex] != -1) {
-                edgeCount++;
+            // If neighbor not in MST and this edge is cheaper, update
+            if (!visited[to] && cost < weight[to]) {
+                parent[to] = nodeIndex;
+                weight[to] = cost;
+                pq.push({cost, to});
             }
-
-            // Relax edges: Update minimum edge weight to connect neighbors to MST
-            for (auto& edge : adj[nodeIndex]) {
-                int to = edge.first;
-                int cost = edge.second;
-                
-                // If neighbor not in MST and this edge is cheaper, update
-                if (!visited[to] && cost < weight[to]) {
-                    parent[to] = nodeIndex;
-                    weight[to] = cost;
-                    pq.push({cost, to});
-                }
-            }
-        }
-
-        // Check if MST spans entire graph (connected graph has V-1 edges)
-        bool mstExists = (edgeCount == N - 1);
-        if (!mstExists) {
-            cout << "Graph is disconnected. MST does not exist.\n";
-            return;
-        }
-
-        cout << "\nCost of MST: " << minCostSum << endl;
-        for (int i = 1; i < N; i++) {
-            cout << parent[i] << " to " << i << " with cost " << weight[i] << "\n";
         }
     }
-};
+
+    // Check if MST spans entire graph (connected graph has V-1 edges)
+    bool mstExists = (edgeCount == V - 1);
+    if (!mstExists) {
+        cout << "Graph is disconnected. MST does not exist.\n";
+        return;
+    }
+
+    cout << "\nCost of MST: " << minCostSum << endl;
+    for (int i = 1; i < V; i++) {
+        cout << parent[i] << " to " << i << " with cost " << weight[i] << "\n";
+    }
+}
 
 
 /*
@@ -133,15 +127,19 @@ public:
  * Finding Minimum Spanning Tree
  */
 int main() {
-    Prims g(5);
-    g.addEdge(0, 1, 2);   // 0 <-> 1 with weight 2
-    g.addEdge(0, 3, 6);   // 0 <-> 3 with weight 6
-    g.addEdge(1, 3, 8);   // 1 <-> 3 with weight 8
-    g.addEdge(1, 4, 3);   // 1 <-> 4 with weight 3
-    g.addEdge(1, 2, 3);   // 1 <-> 2 with weight 3
-    g.addEdge(2, 4, 7);   // 2 <-> 4 with weight 7
+    int V = 5;  // 5 vertices (0-4)
     
-    g.findMST();
+    // Adjacency list: adj[u] = vector of {neighbor, weight} pairs
+    // For undirected graph, add edge in both directions
+    vector<vector<pair<int, int>>> adj = {
+        {{1, 2}, {3, 6}},           // 0: connected to 1 (weight 2), 3 (weight 6)
+        {{0, 2}, {3, 8}, {4, 3}, {2, 3}},  // 1: connected to 0, 3, 4, 2
+        {{1, 3}, {4, 7}},           // 2: connected to 1 (weight 3), 4 (weight 7)
+        {{0, 6}, {1, 8}},           // 3: connected to 0, 1
+        {{1, 3}, {2, 7}}            // 4: connected to 1, 2
+    };
+    
+    findMST(adj, V);
 }
 
 /*

@@ -37,8 +37,8 @@ using namespace std;
  * 
  * IMPORTANT NOTES:
  * - Does NOT work with negative edge weights (use Bellman-Ford instead)
- * - The "visited" check can be optimized (see line 51 explanation)
- * - Multiple entries for same node in PQ are handled by the distance check
+ * - Multiple entries for same node in PQ are handled by the distance check (line 108)
+ * - No visited array needed: the distance check handles already-processed vertices
  * 
  * COMMON USE CASES:
  * - GPS navigation systems
@@ -84,9 +84,6 @@ public:
     int dijkstra(int start, int end) {
         int ans = -1;
         
-        // visited[i] = true if vertex i has been processed (shortest path found)
-        vector<bool> visited(n + 1, false);
-        
         // distance[i] = shortest distance from start to vertex i
         vector<int> distance(n + 1, INT_MAX);
         distance[start] = 0;  // Distance to source is 0
@@ -107,9 +104,8 @@ public:
             // this entry in the PQ is outdated. Skip it.
             // This happens because we push multiple entries for the same vertex when
             // we find better paths, but we don't remove old entries.
+            // This check also handles already-processed vertices (distance[index] == minValue means already processed)
             if(distance[index] < minValue) continue;
-            
-            visited[index] = true;  // Mark as processed
 
             // Relax all edges from current vertex
             // Edge relaxation: Check if going through current vertex gives shorter path
@@ -117,13 +113,11 @@ public:
                 int neighbor = edge.first;      // Destination vertex
                 int edgeWeight = edge.second;   // Weight of the edge
                 
-                // Skip if already processed (shortest path already found)
-                if(visited[neighbor]) continue;
-
                 // Calculate new distance: distance to current + edge weight
                 int newDist = distance[index] + edgeWeight;
                 
                 // If we found a shorter path, update it
+                // Note: If neighbor was already processed, newDist >= distance[neighbor], so this check handles it
                 if(newDist < distance[neighbor]) {
                     distance[neighbor] = newDist;  // Update shortest distance
                     pq.push({newDist, neighbor});  // Add to queue for processing

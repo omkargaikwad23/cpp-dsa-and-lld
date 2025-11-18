@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <tuple>
 using namespace std;
 
 /*
@@ -38,17 +41,11 @@ using namespace std;
  * - Network design (connect all nodes with minimum cost)
  * - Cluster analysis
  * - Image segmentation
+ * 
+ * INPUT FORMAT:
+ * - Adjacency list: adj[u] = vector of {neighbor, weight} pairs
+ * - Graph is undirected: if (u, v, w) exists, (v, u, w) also exists
  */
-
-// Edge structure: represents an undirected edge with weight
-struct Edge {
-    int from, to, cost;
-    Edge(int from, int to, int cost) {
-        this->from = from;
-        this->to = to;
-        this->cost = cost;
-    }
-};
 
 /*
  * Disjoint Set Union (DSU) / Union-Find Data Structure
@@ -66,18 +63,15 @@ struct Edge {
 struct DSU {
     vector<int> parent;  // parent[i] = parent of node i
     vector<int> rank;    // rank[i] = approximate depth of tree rooted at i
-    vector<int> size;    // size[i] = size of component containing i
     int n;
 
     DSU(int _n) {
         n = _n;
         parent.assign(n + 1, 0);
         rank.assign(n + 1, 0);
-        size.assign(n + 1, 0);
         // Initialize: each node is its own parent (separate components)
         for (int i = 0; i <= n; i++) {
             parent[i] = i;
-            size[i] = 1;
         }
     }
 
@@ -116,57 +110,76 @@ struct DSU {
         if (rank[u] > rank[v]) {
             // Attach smaller tree (v) under larger tree (u)
             parent[v] = u;
-            size[u] += size[v];
-            // Rank of u doesn't change (height stays same)
         } else if (rank[u] < rank[v]) {
             // Attach smaller tree (u) under larger tree (v)
             parent[u] = v;
-            size[v] += size[u];
-            // Rank of v doesn't change (height stays same)
         } else {
             // Same rank: can attach either way, but rank increases by 1
             parent[v] = u;
-            size[u] += size[v];
             rank[u]++;  // Height increases by 1 (both trees had same height)
         }
     }
 };
 
 // Helper function to print MST edges and total cost
-void printMstEdges(vector<Edge> &mstEdges, int mstCost) {
+void printMstEdges(vector<tuple<int, int, int>> &mstEdges, int mstCost) {
     cout << "MST cost is : " << mstCost << "\n";
     cout << "Edges in MST are: \n";
-    for (auto& e : mstEdges) {
-        cout << e.from << " to " << e.to << " with cost of " << e.cost << endl;
+    for (auto& edge : mstEdges) {
+        int from = get<0>(edge);
+        int to = get<1>(edge);
+        int cost = get<2>(edge);
+        cout << from << " to " << to << " with cost of " << cost << endl;
     }
-}
-
-// Comparator: sort edges by weight (ascending)
-bool comp(Edge &e1, Edge &e2) {
-    return e1.cost < e2.cost;
 }
 
 /*
  * Kruskal's Algorithm Implementation
  * 
+ * @param adj: Adjacency list representation of undirected graph
+ *             adj[u] = vector of {neighbor, weight} pairs
+ * @param V: Number of vertices
+ * 
  * Core idea: Greedily add minimum weight edges that don't create cycles
  * Cycle detection: If both endpoints are in same DSU component, adding edge creates cycle
  */
-void Kruskal(vector<Edge> &edges, int V, int E) {
+void kruskal(vector<vector<pair<int, int>>> &adj, int V) {
     DSU ds(V);  // Initialize DSU: each vertex is separate component
     
-    // Sort edges by weight (greedy: always consider smallest edge first)
-    sort(edges.begin(), edges.end(), comp);
+    // Extract all edges from adjacency list
+    // Format: {weight, from, to} - weight first for easy sorting
+    vector<tuple<int, int, int>> edges;
+    
+    // Convert adjacency list to edge list
+    // For undirected graph, we only add each edge once (u < v to avoid duplicates)
+    for (int u = 0; u < V; u++) {
+        for (auto& neighbor : adj[u]) {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+            // Only add edge once (when u < v) to avoid duplicates in undirected graph
+            if (u < v) {
+                edges.push_back({weight, u, v});
+            }
+        }
+    }
+    
+    // Sort edges by weight (ascending)
+    sort(edges.begin(), edges.end());
+    
     int mstCost = 0;
-    vector<Edge> mstEdges;
+    vector<tuple<int, int, int>> mstEdges;
 
     // Process edges in sorted order
-    for (Edge& edge : edges) {
+    for (auto& edge : edges) {
+        int weight = get<0>(edge);
+        int from = get<1>(edge);
+        int to = get<2>(edge);
+        
         // If endpoints are in different components, edge doesn't create cycle
-        if (ds.findParent(edge.from) != ds.findParent(edge.to)) {
-            mstCost += edge.cost;
-            mstEdges.push_back(Edge(edge.from, edge.to, edge.cost));
-            ds.merge(edge.from, edge.to);  // Merge components
+        if (ds.findParent(from) != ds.findParent(to)) {
+            mstCost += weight;
+            mstEdges.push_back({from, to, weight});
+            ds.merge(from, to);  // Merge components
         }
         // If endpoints in same component, skip (would create cycle)
     }
@@ -187,17 +200,19 @@ void Kruskal(vector<Edge> &edges, int V, int E) {
  * Finding Minimum Spanning Tree using Kruskal's algorithm
  */
 int main() {
-    int V = 5, E = 6;  // 5 vertices (0-4), 6 edges
-    vector<Edge> edges;
+    int V = 5;  // 5 vertices (0-4)
+    
+    // Adjacency list: adj[u] = vector of {neighbor, weight} pairs
+    // For undirected graph, add edge in both directions
+    vector<vector<pair<int, int>>> adj = {
+        {{1, 2}, {3, 6}},           // 0: connected to 1 (weight 2), 3 (weight 6)
+        {{0, 2}, {3, 8}, {4, 3}, {2, 3}},  // 1: connected to 0, 3, 4, 2
+        {{1, 3}, {4, 7}},           // 2: connected to 1 (weight 3), 4 (weight 7)
+        {{0, 6}, {1, 8}},           // 3: connected to 0, 1
+        {{1, 3}, {2, 7}}            // 4: connected to 1, 2
+    };
 
-    edges.push_back(Edge(0, 1, 2));   // 0 <-> 1 with weight 2
-    edges.push_back(Edge(0, 3, 6));   // 0 <-> 3 with weight 6
-    edges.push_back(Edge(1, 3, 8));   // 1 <-> 3 with weight 8
-    edges.push_back(Edge(1, 4, 3));   // 1 <-> 4 with weight 3
-    edges.push_back(Edge(1, 2, 3));   // 1 <-> 2 with weight 3
-    edges.push_back(Edge(2, 4, 7));   // 2 <-> 4 with weight 7
-
-    Kruskal(edges, V, E);
+    kruskal(adj, V);
 }
 
 /*
