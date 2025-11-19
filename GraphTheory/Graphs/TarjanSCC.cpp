@@ -4,20 +4,22 @@
     This solution uses **Tarjan's Algorithm** to find all the critical connections (bridges) in an undirected graph.
 
     - A bridge is an edge that, if removed, increases the number of connected components in the graph.
-    - We assign each node a discovery time (`tin`) and a low-link value (`low`) during DFS traversal.
-    - If for any adjacent node `v`, `low[v] > tin[u]`, then edge (u, v) is a bridge.
+    - We assign each node a discovery time (`discoveryTime`) and a low-link value (`lowLink`) during DFS traversal.
+    - If for any adjacent node `v`, `lowLink[v] > discoveryTime[u]`, then edge (u, v) is a bridge.
 
     Key Concepts:
-    - `tin[node]` stores the time at which the node was first visited.
-    - `low[node]` represents the lowest discovery time reachable from that node (including back edges).
-    - During DFS traversal, if we encounter a child with `low[child] > tin[node]`, then that edge is a bridge.
+    - `discoveryTime[node]` stores the time at which the node was first visited.
+    - `lowLink[node]` represents the lowest discovery time (node's discovery time) reachable from that node (including back edges).
+    - During DFS traversal, if we encounter a child with `lowLink[child] > discoveryTime[node]`, then that edge is a bridge. 
+        - If YES → nothing lower was reachable → the only way to reach child was through node → that edge (node, child) is a bridge.
+        - If NO → there was a lower path → the edge (node, child) is not a bridge.
 
     Time Complexity: O(N + E)
     - Each node and edge is visited exactly once in DFS traversal.
     
     Space Complexity: O(N + E)
     - `adjacency list`: O(E)
-    - `tin`, `low`, `visited` arrays: O(N)
+    - `discoveryTime`, `lowLink`, `visited` arrays: O(N)
     - `recursion stack`: O(N) in worst case
 */
 
@@ -28,8 +30,8 @@ public:
     vector<vector<int>> criticalConnections(int n, vector<vector<int>>& connections) {
         vector<vector<int>> adjacencyList(n);
         vector<bool> visited(n, false);
-        vector<int> discoveryTime(n, 0); // tin
-        vector<int> lowLink(n, 0);       // low
+        vector<int> discoveryTime(n, 0); 
+        vector<int> lowLink(n, 0);
         vector<vector<int>> bridges;
 
         // Build the undirected graph
@@ -81,3 +83,16 @@ public:
         }
     }
 };
+
+/*
+
+Example Graph:
+0 --- 1 --- 2
+      |
+      3 --- 4
+
+Bridges: (0,1), (1,2), (1,3), (3,4)
+
+Explanation:
+
+*/
