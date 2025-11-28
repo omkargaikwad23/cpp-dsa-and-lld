@@ -26,7 +26,7 @@ vector<vector<int>> getAllValidSequences() {
     vector<vector<int>> result;
     vector<int> sequence;
     unordered_map<int, vector<int>> transitions = {{1, {2, 3}}, {2, {1, 2}}, {3, {1}}};
-    backtrack(sequence, 0, result, transitions);
+    backtrack(sequence, 0, result, transitions); // start with 0 sum and empty sequence
     return result;
 }
 

@@ -1,80 +1,96 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <climits>
 using namespace std;
 
-typedef long long ll;
-typedef long long int lli;
-typedef long double ld;
-#define pii pair<int, int>
-#define ff first
-#define ss second
-#define mp make_pair
-#define pb push_back
-#define loop(i, a, b) for (int i = a; i < b; i++)
+/*
+ * BEST SUM - Shortest Combination Problem
+ * ========================================
+ * 
+ * Problem: Find the shortest combination of numbers from array that sums to target.
+ * You can use numbers from array any number of times.
+ * 
+ * Example:
+ * Input: target = 100, array = [4, 10, 20, 25]
+ * Output: [25, 25, 25, 25] (shortest combination: 4 numbers)
+ * 
+ * Approach: Memoized recursion
+ * - Try each number in array
+ * - Find best combination for remaining sum
+ * - Keep track of shortest combination
+ * 
+ * Time Complexity: O(m^2 * n) where m = target sum, n = array size
+ * Space Complexity: O(m^2) for memoization
+ */
 
-// m = target sum
-// n = array size
+map<int, vector<int>> memo;
 
-// brute force
-// time : O(n^m*m)
-// space : O(m^2)
-
-// Memoized
-// time : O(m^2*n)
-// space : O(m^2)
-
-// best_sum(100, [4, 10, 20, 25], 4) ==> [25, 25, 25, 25]
-
-map<ll, vector<int>>mymp;
-
-pair<vector<int>, bool> best_sum(int sum, int arr[], int n){
-  auto itr = mymp.find(sum);
- 
-  if(itr!=mymp.end()) 
-    return {itr->second, true};
-
-  if(sum==0) {
-    vector<int>v; 
-    return {v, true};
-  }
-
-  if(sum<0) { 
-    vector<int>v; 
-    return {v, false};
-  }
-
-  vector<int>shortestCombination;
-
-  for(int i=0; i<n; i++){
-    int remain = sum - arr[i];
-    pair<vector<int>, bool> temp = best_sum(remain, arr, n);
-    
-    if(temp.second == true){
-      temp.first.push_back(arr[i]);
-      if((shortestCombination.size() == 0 || shortestCombination.size() > temp.first.size())){
-        shortestCombination = temp.first;
-      }
+pair<vector<int>, bool> bestSum(int targetSum, vector<int>& numbers) {
+    // Check memoization
+    if (memo.find(targetSum) != memo.end()) {
+        return {memo[targetSum], true};
     }
-  }
-  mymp[sum] = shortestCombination;
-  return {shortestCombination, true};
+    
+    // Base cases
+    if (targetSum == 0) {
+        return {{}, true};  // Empty combination is valid
+    }
+    
+    if (targetSum < 0) {
+        return {{}, false};  // Invalid: negative sum
+    }
+    
+    vector<int> shortestCombination;
+    
+    // Try each number in the array
+    for (int num : numbers) {
+        int remainder = targetSum - num;
+        pair<vector<int>, bool> result = bestSum(remainder, numbers);
+        
+        if (result.second == true) {
+            // Valid combination found
+            vector<int> combination = result.first;
+            combination.push_back(num);  // Add current number
+            
+            // Update shortest combination if this is shorter
+            if (shortestCombination.empty() || combination.size() < shortestCombination.size()) {
+                shortestCombination = combination;
+            }
+        }
+    }
+    
+    // Store result in memo
+    bool isValid = !shortestCombination.empty();
+    if (isValid) {
+        memo[targetSum] = shortestCombination;
+    }
+    
+    return {shortestCombination, isValid};
 }
 
-int main()
-{
-  int t, sum;
-  cin >> t;
-  int arr[t];
-  loop(i, 0, t) cin >> arr[i];
-  cin >> sum;
-
-  pair<vector<int>, bool> res = best_sum(sum, arr, t);
-
-  if(res.first.size() == 0){
-    cout << "NOT POSSIBLE" << endl;
-  }else{
-    for(auto i : res.first){
-      cout << i << " " ;
+int main() {
+    // Example: target = 100, numbers = [4, 10, 20, 25]
+    int targetSum = 100;
+    vector<int> numbers = {4, 10, 20, 25};
+    
+    memo.clear();  // Clear memo for fresh run
+    pair<vector<int>, bool> result = bestSum(targetSum, numbers);
+    
+    cout << "Target: " << targetSum << endl;
+    cout << "Numbers: [4, 10, 20, 25]" << endl;
+    
+    if (result.second == false || result.first.empty()) {
+        cout << "Result: NOT POSSIBLE" << endl;
+    } else {
+        cout << "Shortest combination: ";
+        for (int num : result.first) {
+            cout << num << " ";
+        }
+        cout << endl;
+        cout << "Length: " << result.first.size() << " numbers" << endl;
+        cout << "Expected: 25 25 25 25 (4 numbers)" << endl;
     }
-  }
-  return 0;
+    
+    return 0;
 }

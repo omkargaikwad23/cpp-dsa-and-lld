@@ -1,190 +1,139 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-
 /*
-Kosaruju algorithm used to find Strongly connected components in a graph
+Kosaraju's Algorithm: Find Strongly Connected Components (SCCs) in a directed graph
 
-A directed graph is called strongly connected if there is a path in each 
-direction between each pair of vertices of the graph.
+Time Complexity: O(V + E)
+- DFS1: O(V + E) - visit each node and edge once
+- Transpose: O(V + E) - iterate through all edges to reverse them
+- DFS2: O(V + E) - visit each node and edge once in transposed graph
+Total: O(V + E)
 
-1) Perform DFS1 traversal of graph and push node to stack before returning
-2) Find transpose of graph (reverse all the edges)
-3) Pop nodes one by one from stack  and again do DFS2 on modified graph
-   (each DFS2 traversal will form a SCC)
+Space Complexity: O(V + E)
+- Adjacency list: O(V + E)
+- Transposed graph: O(V + E)
+- Stack: O(V)
+- Visited array: O(V)
+Total: O(V + E)
 
-- time: O(E+V) [2 dfs + 1 reverse the graph edges]
+Steps:
+1. DFS1: Traverse graph, push nodes to stack after visiting all neighbors
+2. Transpose: Reverse all edges
+3. DFS2: Pop from stack, DFS on transposed graph (each DFS = one SCC)
+
+Dry Run Example:
+Graph: 0->1->2->0 (SCC1), 2->3->4->5->3 (SCC2)
+
+Step 1 - DFS1 (fill stack):
+  Start from 0: 0->1->2->0 (back edge, backtrack)
+  Stack: [2, 1, 0]
+
+  Continue from 2: 2->3->4->5->3 (back edge, backtrack)
+  Stack: [5, 4, 3, 2, 1, 0]
+
+Step 2 - Transpose:
+  Original: 0->1, 1->2, 2->0,3, 3->4, 4->5, 5->3
+  Transposed: 0<-2, 1<-0, 2<-1, 3<-2,5, 4<-3, 5<-4
+
+Step 3 - DFS2 (find SCCs):
+  Pop 0: DFS from 0 in transposed graph
+    Visit 0->2->1->0 (back edge)
+    SCC1 found: {0, 2, 1}
+  Pop 1,2: Already visited, skip
+  Pop 3: DFS from 3 in transposed graph
+    Visit 3->5->4->3 (back edge)
+    SCC2 found: {3, 5, 4}
+  Pop 4,5: Already visited, skip
+
+Result: 2 SCCs - {0,1,2} and {3,4,5}
 */
 
-class Graph{
-    int N, E;
-    vector<int> *adj, *rev;
-
-public:
-    Graph(int N){
-        this->N = N;
-        adj = new vector<int>[N];
-        rev = new vector<int>[N];
-    }
-
-    void addEdge(int from, int to){
-        adj[from].push_back(to);
-    }
-
-    void findTranposeOfAGraph(){
-        for(int from=0; from<N; from++){
-            for(int to : adj[from]){
-                rev[to].push_back(from);
-            }
+// First DFS: Fill stack with nodes in order of finishing times
+void dfs1(int u, vector<vector<int>>& adj, vector<bool>& vis, stack<int>& st) {
+    vis[u] = true;
+    for(int v : adj[u]) {
+        if(!vis[v]) {
+            dfs1(v, adj, vis, st);
         }
     }
-
-    void dfs1(int u, vector<bool> &visited, stack<int> &myStack){
-        visited[u] = true;
-        for(int v : adj[u]){
-            if(!visited[v]){
-                dfs1(v, visited, myStack);
-            }
-        }
-        myStack.push(u);
-    }
-
-    void dfs2(int from, vector<bool> &visited, vector<int> &component){
-        visited[from] = true;
-        component.push_back(from);
-        for(int to : rev[from]){
-            if(!visited[to]){
-                dfs2(to, visited, component);
-            }
-        }
-    }
-
-    void findSCC(){
-        vector<bool> visited(N, false);
-        stack<int> myStack;
-        for(int i=0; i<N; i++){
-            if(!visited[i]){
-                dfs1(i, visited, myStack);
-            }
-        }
-
-        // mark all nodes again unvisited to do next dfs2
-        for(int i=0; i<N; i++)
-            visited[i] = false;
-
-        // find tranpose of given graph
-        findTranposeOfAGraph();
-        
-        int countSCC = 0;
-        vector<vector<int>> stronglyConnectedComponents;
-        while(!myStack.empty()){
-            int node = myStack.top();
-            myStack.pop();
-            if(!visited[node]){
-                countSCC++;
-                vector<int> component;
-                dfs2(node, visited, component);
-                stronglyConnectedComponents.push_back(component);
-            }
-        }
-
-        cout << "Number of strongly connected components:" << countSCC << "\n";
-        cout << "SCCs: \n";
-        for(auto& component : stronglyConnectedComponents){
-            for(auto node : component){
-                cout << node << " ";
-            }
-            cout << endl;
-        }
-    }
-};
-
-
-int main(){
-    Graph g(6);
-    g.addEdge(0, 1);
-    g.addEdge(1, 2);
-    g.addEdge(2, 0);
-    g.addEdge(2, 3);
-    g.addEdge(3, 4);
-    g.addEdge(4, 5);   
-    g.addEdge(5, 3);
-    g.findSCC();
+    st.push(u);  // Push after visiting all neighbors
 }
 
-/*
+// Second DFS: Explore transposed graph to find SCCs
+void dfs2(int u, vector<vector<int>>& rev, vector<bool>& vis, vector<int>& component) {
+    vis[u] = true;
+    component.push_back(u);
+    for(int v : rev[u]) {
+        if(!vis[v]) {
+            dfs2(v, rev, vis, component);
+        }
+    }
+}
 
-Here's how the original graph looks:
-    0 → 1
-    ↑   ↓
-    2 ←
-    ↓
-    3 → 4 → 5
-    ↑       ↓
-    ← ← ← ← ←
+// Build transposed graph (reverse all edges)
+vector<vector<int>> transpose(int n, vector<vector<int>>& adj) {
+    vector<vector<int>> rev(n);
+    for(int u = 0; u < n; u++) {
+        for(int v : adj[u]) {
+            rev[v].push_back(u);
+        }
+    }
+    return rev;
+}
 
-Start DFS from node 0:
-Visit 0, go to 1.
-Visit 1, go to 2.
-Visit 2, go to 0 (already visited), go to 3.
-Visit 3, go to 4.
-Visit 4, go to 5.
-Visit 5, go to 3 (already visited).
-Push 5 to stack.
-Push 4 to stack.
-Push 3 to stack.
-Push 2 to stack.
-Push 1 to stack.
-Push 0 to stack.
+void findSCC(int n, vector<vector<int>>& adj) {
+    // Step 1: First DFS to fill stack
+    vector<bool> vis(n, false);
+    stack<int> st;
+    for(int i = 0; i < n; i++) {
+        if(!vis[i]) {
+            dfs1(i, adj, vis, st);
+        }
+    }
 
-Stack after first DFS: [5, 4, 3, 2, 1, 0]
+    // Step 2: Transpose graph
+    vector<vector<int>> rev = transpose(n, adj);
 
-Here's how the transposed graph looks:
-    0 ← 1
-    ↓   ↑
-    2 →
-    ↑
-    3 ← 4 ← 5
-    ↓       ↑
-    → → → → →
+    // Step 3: Second DFS on transposed graph
+    fill(vis.begin(), vis.end(), false);
+    vector<vector<int>> sccs;
+    
+    while(!st.empty()) {
+        int u = st.top();
+        st.pop();
+        if(!vis[u]) {
+            vector<int> component;
+            dfs2(u, rev, vis, component);
+            sccs.push_back(component);
+        }
+    }
 
-Step 3: Second DFS (dfs2)
-We perform DFS on the transposed graph by popping nodes from the stack.
+    // Output results
+    cout << "Number of SCCs: " << sccs.size() << "\n";
+    for(auto& comp : sccs) {
+        for(int node : comp) {
+            cout << node << " ";
+        }
+        cout << "\n";
+    }
+}
 
-Pop 0 from stack:
-
-Start DFS from node 0:
-Visit 0, go to 2.
-Visit 2, go to 1.
-Visit 1, go to 0 (already visited).
-SCC found: {0, 2, 1}
-Pop 1 from stack (already visited).
-
-Pop 2 from stack (already visited).
-
-Pop 3 from stack:
-
-Start DFS from node 3:
-Visit 3, go to 5.
-Visit 5, go to 4.
-Visit 4, go to 3 (already visited).
-SCC found: {3, 5, 4}
-Pop 4 from stack (already visited).
-
-Pop 5 from stack (already visited).
-
-    SCC 1: {0, 2, 1}
-    0 → 1
-    ↑   ↓
-    2 ←
-
-    SCC 2: {3, 5, 4}
-    3 → 4 → 5
-    ↑       ↓
-    ← ← ← ← ←
-
-Number of strongly connected components:2
-SCCs: 
-0 2 1
-3 5 4
-*/
+int main() {
+    int n = 6;
+    // Adjacency list: adj[u] contains all nodes that u points to
+    // Graph structure:
+    //   0 -> 1 -> 2 -> 0  (SCC1: {0,1,2})
+    //        ↓
+    //   3 -> 4 -> 5 -> 3  (SCC2: {3,4,5})
+    vector<vector<int>> adj = {
+        {1},      // 0 -> 1
+        {2},      // 1 -> 2
+        {0, 3},   // 2 -> 0, 2 -> 3
+        {4},      // 3 -> 4
+        {5},      // 4 -> 5
+        {3}       // 5 -> 3
+    };
+    
+    findSCC(n, adj);
+}

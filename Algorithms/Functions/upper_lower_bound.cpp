@@ -1,4 +1,7 @@
 /*
+lower_bound → first element >= x  
+upper_bound → first element > x
+
 Input: 10 20 30 40 50
 Output: lower_bound for element 30 at index 2
 
