@@ -44,92 +44,57 @@ using namespace std;
  * 4. Format output: combine coefficients, sort alphabetically
  */
 
-void solve(string &s) {
-    // Map to store coefficient for each variable
+ void solve(string &s) {
     map<char, int> freq;
+    stack<int> signStack; // stack to track the sign of the current term
+    signStack.push(1);  // Global sign multiplier
+    int sign = 1;       // Current term's sign
     
-    // Track if we're inside parentheses with a minus sign before it
-    bool isMinus = false;
-    
-    // Track current sign (true = positive, false = negative)
-    bool isPlus = true;
-
     for(int i = 0; i < s.size(); i++) {
         char ch = s[i];
         
-        // If it's a variable (alphanumeric), update its frequency
+        // if the character is a variable, add it to the frequency map with the sign of the current term
         if(isalnum(ch)) {
-            bool currentSign = isPlus;
-            // If inside parentheses with minus, all variables should be negated
-            if(isMinus) {
-                if(i > 0 && s[i-1] == '(') {
-                    // First variable after '(': treat as positive (implicit +) then negate
-                    // because of the '-' before parentheses
-                    currentSign = false;  // Always negative
-                }
-                // For subsequent variables, isPlus already reflects the flipped operator signs
-            }
-            freq[ch] += currentSign ? 1 : -1;
+            // Add variable with sign = current sign × stack top
+            freq[ch] += sign * signStack.top();
+            sign = 1;  // Reset for next term
         }
-        else {
-            // Handle parentheses: check if minus sign is before '('
-            if(ch == '(') {
-                if(i != 0 && s[i-1] == '-') {
-                    isMinus = true;  // Mark that we need to flip signs inside
-                }
-            }
-            else if(ch == ')') {
-                isMinus = false;  // Reset when closing parentheses
-            }
-            // Handle operators
-            else if(ch == '+') {
-                isPlus = true;
-                // If inside parentheses with minus, flip the sign
-                if(isMinus) {
-                    isPlus = false;  // '+' becomes '-' when negated
-                }
-            }
-            else if(ch == '-') {
-                isPlus = false;
-                // If inside parentheses with minus, flip the sign
-                if(isMinus) {
-                    isPlus = true;  // '-' becomes '+' when negated
-                }
-            }
+        else if(ch == '+') {
+            sign = 1;
+        }
+        else if(ch == '-') {
+            sign = -1;
+        }
+        else if(ch == '(') {
+            // Push cumulative sign effect for this parenthesis level
+            signStack.push(sign * signStack.top());
+            sign = 1;  // Reset for first term in parentheses
+        }
+        else if(ch == ')') {
+            signStack.pop();  // Exit this parenthesis level
         }
     }
     
-    // Build the simplified expression string
+    // Build result
     string ans = "";
-    for(auto itr : freq) {
-        char ch = itr.first;
-        int num = itr.second;
-        
-        // Skip variables with zero coefficient
+    for(auto [ch, num] : freq) {
         if(num == 0) continue;
-
-        // Add sign
-        if(num < 0) {
-            ans += '-';
-        }
-        else {
+        
+        // Add '+' for positive terms (except first)
+        if(!ans.empty() && num > 0) {
             ans += '+';
         }
         
-        // Remove leading '+' sign
-        if(ans.size() == 1 && ans.back() == '+') {
-            ans.pop_back();
+        // Add coefficient (skip if ±1)
+        if(num == -1) {
+            ans += '-';
+        } else if(num != 1) {
+            ans += to_string(num);
         }
         
-        // Add coefficient if it's not 1 or -1
-        if(abs(num) > 1) {
-            ans += to_string(abs(num));
-        }
-        
-        // Add the variable
         ans += ch;
     }
-
+    
     cout << ans << endl;
 }
 

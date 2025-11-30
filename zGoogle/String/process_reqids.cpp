@@ -13,6 +13,7 @@ Start(5, req4)
 Finish(6, req4)
 Finish(7, req3)
 Finish(8, req2)
+
 Your task is to process these log entries and produce an output string that indicates the start and end times for each request. The output should be sorted by the finish times of the requests. The format should be:
 
 omkar@L1819 design % g++ -std=c++11 process_reqids.cpp -o process_reqids
