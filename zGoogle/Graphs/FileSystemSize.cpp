@@ -17,3 +17,37 @@ No two directories share the same child
 No directory contains a non-existent child key
 
 */
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+#include <queue>
+#include <stack>
+#include <string>
+
+using namespace std;
+
+
+int get_size(unordered_map<int, pair<string, vector<int>>> &fs, int key) {
+    if(fs[key].first == "file") {
+        return fs[key].second[0];
+    }
+    int size = 0;
+    for(int child : fs[key].second) {
+        size += get_size(fs, child);
+    }
+    return size;
+}
+
+int main() {
+    unordered_map<int, pair<string, vector<int>>> fs = {
+        {1, {"directory", {2, 3}}},
+        {2, {"directory", {4, 5}}},
+        {4, {"file", {100}}},
+        {5, {"file", {200}}},
+        {3, {"file", {300}}},
+    };
+    cout << get_size(fs, 1) << endl;
+    return 0;
+}
