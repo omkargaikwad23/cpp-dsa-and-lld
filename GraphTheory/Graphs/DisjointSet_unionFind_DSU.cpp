@@ -33,7 +33,7 @@ struct DSU {
         if (rank[u] < rank[v]) { 
             swap(u, v); 
         }
-        parent[v] = u; // Attach v under u by setting parent[v] = u
+        parent[v] = u; // rank of u is greater than v, so v is attached under u
         size[u] += size[v]; // Update the size of the new root
 
         if (rank[u] == rank[v]) {

@@ -1,128 +1,89 @@
-
 /*
-You have movies with the movie name and rating. For example:
+Find N highest-rated movies similar to a given movie.
 
-"Movie A , rating 6",
-"Movie B , rating 7",
-"Movie C , rating 8",
-"Movie D , rating 9",
-"Movie E , rating 5",
+Movies have ratings and similarity relations (bidirectional & transitive).
+Given (movieName, N), return N similar movies with highest ratings.
 
-You are also given transitive relation (bi-directional), for example:
-Movie A is similar to Movie B,
-Movie B is similar to Movie C.
-Movie C is similar to Movie D.
-Movie A is similar to Movie E.
-
-keep in mind it's bi-directional(means B is similar to A as well)
-
-We can safely assume from above relation that :
-Movie A is similar to Movie C as well
-
-That being said you will be given input as (movieName, N), you have to find out N movies similar to the movieName with highest rating.
-
-In this case,
-A->6
-B->7
-C->8
-D->9
-E->5
-
-input=(A,2) -> means find 2 movies with highest rating similar to movie A.
-output= D,C -> as A is similar to B and B is similar to C and C is similar to D and A is similar to E means A,B,C,D,E are similar movies and among them D and C have highest rating , hence the above answer.
-
-1. create adj list
-2. perform bfs and get the connected component
-3. sort the component
+Example:
+  Movies: A(6), B(7), C(8), D(9), E(5)
+  Similar: A-B, B-C, C-D, A-E
+  
+  Input: (A, 2) → Output: [D, C]
+  
+Approach:
+  1. Build adjacency list for similarity graph
+  2. DFS/BFS to find all connected movies
+  3. Sort by rating and return top N
 */
 
-
-
-#include <iostream>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <queue>
-#include <algorithm>
+#include <bits/stdc++.h>
 using namespace std;
 
-// Function that performs BFS to find all movies similar to the starting movie
-void bfs(const unordered_map<string, unordered_set<string>>& graph,
-         const string& startMovie,
-         unordered_set<string>& connectedMovies) {
-    queue<string> toVisit;
-    toVisit.push(startMovie);
-    connectedMovies.insert(startMovie);
-
-    while (!toVisit.empty()) {
-        string current = toVisit.front();
-        toVisit.pop();
-
-        for (const auto& neighbor : graph.at(current)) {
-            if (connectedMovies.find(neighbor) == connectedMovies.end()) {
-                connectedMovies.insert(neighbor);
-                toVisit.push(neighbor);
+class MovieFinder {
+    unordered_map<string, int> ratings;
+    unordered_map<string, vector<string>> graph;
+    
+    void dfs(const string& movie, unordered_set<string>& visited) {
+        visited.insert(movie);
+        for (const string& neighbor : graph[movie]) {
+            if (!visited.count(neighbor)) {
+                dfs(neighbor, visited);
             }
         }
     }
-}
-
-// Comparator function to sort movies by their ratings
-bool compareMovies(const pair<string, int>& a, const pair<string, int>& b) {
-    return a.second > b.second;
-}
-
-// Main function to find top N similar movies by rating
-vector<string> findTopSimilarMovies(const unordered_map<string, int>& ratings,
-                                              const unordered_map<string, unordered_set<string>>& graph,
-                                              const string& movieName,
-                                              int N) {
-    unordered_set<string> connectedMovies;
-    bfs(graph, movieName, connectedMovies);
-
-    // Prepare a vector of ratings
-    vector<pair<string, int>> movieRatings;
-    for (const auto& movie : connectedMovies) {
-        if (movie != movieName) { // Exclude the starting movie itself
-            movieRatings.emplace_back(movie, ratings.at(movie));
-        }
+    
+public:
+    void addMovie(const string& name, int rating) {
+        ratings[name] = rating;
+        graph[name]; // ensure node exists
     }
-
-    // Sort the vector by ratings in descending order
-    sort(movieRatings.begin(), movieRatings.end(), compareMovies);
-
-    // Collect top N movies
-    vector<string> result;
-    for (int i = 0; i < N && i < movieRatings.size(); ++i) {
-        result.push_back(movieRatings[i].first);
+    
+    void addSimilarity(const string& a, const string& b) {
+        graph[a].push_back(b);
+        graph[b].push_back(a);
     }
-
-    return result;
-}
+    
+    vector<string> findTopN(const string& movie, int n) {
+        // Find all similar movies via DFS
+        unordered_set<string> similar;
+        dfs(movie, similar);
+        similar.erase(movie); // exclude the query movie
+        
+        // Convert to vector and sort by rating (descending)
+        vector<string> result(similar.begin(), similar.end());
+        sort(result.begin(), result.end(), [&](const string& a, const string& b) {
+            return ratings[a] > ratings[b];
+        });
+        
+        // Return top N
+        if (result.size() > n) result.resize(n);
+        return result;
+    }
+};
 
 int main() {
-    // Movie ratings
-    unordered_map<string, int> ratings = {
-        {"A", 6}, {"B", 7}, {"C", 8}, {"D", 9}, {"E", 5}
-    };
-
-    // Movie similarity graph representation
-    unordered_map<string, unordered_set<string>> graph = {
-        {"A", {"B", "E"}},
-        {"B", {"A", "C"}},
-        {"C", {"B", "D"}},
-        {"D", {"C"}},
-        {"E", {"A"}}
-    };
-
-    string movieName = "A";
-    int N = 2;
-
-    vector<string> topMovies = findTopSimilarMovies(ratings, graph, movieName, N);
-
-    for (const auto& movie : topMovies) {
-        cout << movie << " ";
+    MovieFinder finder;
+    
+    // Add movies with ratings
+    finder.addMovie("A", 6);
+    finder.addMovie("B", 7);
+    finder.addMovie("C", 8);
+    finder.addMovie("D", 9);
+    finder.addMovie("E", 5);
+    
+    // Add similarity relations
+    finder.addSimilarity("A", "B");
+    finder.addSimilarity("B", "C");
+    finder.addSimilarity("C", "D");
+    finder.addSimilarity("A", "E");
+    
+    // Find top 2 similar movies to A
+    vector<string> top = finder.findTopN("A", 2);
+    
+    for (const string& m : top) {
+        cout << m << " ";
     }
-
+    // Output: D C
+    
     return 0;
 }
