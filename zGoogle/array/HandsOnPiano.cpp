@@ -41,32 +41,22 @@ using namespace std;
 
 
 int minHandRaises(vector<int> &keys) {
-    int count = 0, n = keys.size();
-    int index = 0;
+    if (keys.empty()) return 0;
     
-    int l = keys[index], r = keys[index];
+    int raises = 0;
+    int lo = keys[0], hi = keys[0];  // Current hand range [lo, hi]
     
-    while(index < n) {
-        int cur = keys[index];
-        if(cur >= l && cur <= r) {
-            index++; 
-            continue;
+    for (int key : keys) {
+        if (key > lo + 4 || key < hi - 4) {  // Can't reach this key
+            raises++;
+            lo = hi = key;  // Reset hand position
+        } else {
+            lo = min(lo, key);  // Extend range if needed
+            hi = max(hi, key);
         }
-        else if(cur < l && r - cur <= 4) {
-            l = cur;
-        }
-        else if(cur > r && cur - l <= 4) {
-            r = cur;
-        }
-        else {
-            count++;
-            l = cur;
-            r = cur;
-        }
-        index++;
     }
     
-    return count;
+    return raises;
 }
 
 // Helper to run testcases
@@ -95,6 +85,7 @@ int main() {
     runTest({1,2,3,4,5,6}, 1);
     runTest({50,51,52,1000,1001,1002,1003,2000}, 2);
     runTest({3,10,11,4,5,6,20,21}, 3);
+    runTest({5,1,9}, 1);
 
     return 0;
 }

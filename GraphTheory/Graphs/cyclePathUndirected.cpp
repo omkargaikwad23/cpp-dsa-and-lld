@@ -22,11 +22,13 @@ class RecursiveDFS {
     bool dfs(int src, int parent, vector<bool>& vis, vector<int> adj[]){
         vis[src] = true;
         for(int dest : adj[src]){
-            if(!vis[dest]) // if not visited to adjacent 'destination' node
+            if(!vis[dest]) { // if not visited, recurse
                 if(dfs(dest, src, vis, adj))
                     return true;
-            if(dest != parent) // if adjacent node is visited and is it not parent then graph contains cycle
+            }
+            else if(dest != parent) { // visited AND not parent = back edge = CYCLE!
                 return true;
+            }
         }
         return false;
     }
