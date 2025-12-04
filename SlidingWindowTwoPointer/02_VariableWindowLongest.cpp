@@ -383,15 +383,13 @@ Time: O(n) | Space: O(1)
 int maxScore(vector<int>& cardPoints, int k) {
     int n = cardPoints.size();
     int windowSize = n - k;
-    int total = 0, windowSum = 0, minWindowSum;
-    
-    // Calculate total sum
-    for (int x : cardPoints) total += x;
+    int total = 0, windowSum = 0, minWindowSum = INT_MAX;
     
     if (windowSize == 0) return total;
     
     // Find minimum window sum of size (n-k)
     for (int i = 0; i < n; i++) {
+        total += cardPoints[i]; // total sum of all cards
         windowSum += cardPoints[i];
         
         if (i >= windowSize) {
@@ -399,8 +397,7 @@ int maxScore(vector<int>& cardPoints, int k) {
         }
         
         if (i >= windowSize - 1) {
-            if (i == windowSize - 1) minWindowSum = windowSum;
-            else minWindowSum = min(minWindowSum, windowSum);
+            minWindowSum = min(minWindowSum, windowSum);
         }
     }
     

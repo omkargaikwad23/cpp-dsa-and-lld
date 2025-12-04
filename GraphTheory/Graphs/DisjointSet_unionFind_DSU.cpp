@@ -24,21 +24,31 @@ struct DSU {
         return parent[node] = findParent(parent[node]); // Path compression
     }
 
-    void merge(int u, int v) {
+    // Returns true if merge happened, false if already in same component
+    bool merge(int u, int v) {
         u = findParent(u);
         v = findParent(v);
-        if (u == v) return; // Already in the same component
-
-        // Union by rank
-        if (rank[u] < rank[v]) { 
-            swap(u, v); 
+        
+        if (u == v) return false; // Already in the same component
+        
+        // Union by rank: attach smaller tree under larger tree
+        if (rank[u] > rank[v]) {
+            // u's tree is taller -> v goes under u
+            parent[v] = u;
+            size[u] += size[v];
         }
-        parent[v] = u; // rank of u is greater than v, so v is attached under u
-        size[u] += size[v]; // Update the size of the new root
-
-        if (rank[u] == rank[v]) {
+        else if (rank[v] > rank[u]) {
+            // v's tree is taller -> u goes under v
+            parent[u] = v;
+            size[v] += size[u];
+        }
+        else {
+            // Same rank -> pick u as root, increment its rank
+            parent[v] = u;
+            size[u] += size[v];
             rank[u]++;
         }
+        return true;
     }
 
     // Function to get the size of a component

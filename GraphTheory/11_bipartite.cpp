@@ -33,7 +33,7 @@ bool isBipartiteBFS(int n, vector<vector<int>>& adj) {
             q.pop();
             
             for (int v : adj[u]) {
-                if (color[v] == -1) {
+                if (color[v] == -1) { // unvisited
                     color[v] = 1 - color[u];
                     q.push(v);
                 } else if (color[v] == color[u]) {
@@ -68,79 +68,6 @@ bool isBipartiteDFS(int n, vector<vector<int>>& adj) {
     
     for (int i = 0; i < n; i++) {
         if (color[i] == -1 && !dfs(i, 0)) return false;
-    }
-    
-    return true;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PROBLEM 1: Is Graph Bipartite? (LeetCode 785)
-// ═══════════════════════════════════════════════════════════════════════════
-
-bool isBipartite(vector<vector<int>>& graph) {
-    int n = graph.size();
-    vector<int> color(n, -1);
-    
-    for (int i = 0; i < n; i++) {
-        if (color[i] != -1) continue;
-        
-        queue<int> q;
-        q.push(i);
-        color[i] = 0;
-        
-        while (!q.empty()) {
-            int u = q.front();
-            q.pop();
-            
-            for (int v : graph[u]) {
-                if (color[v] == -1) {
-                    color[v] = 1 - color[u];
-                    q.push(v);
-                } else if (color[v] == color[u]) {
-                    return false;
-                }
-            }
-        }
-    }
-    
-    return true;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PROBLEM 2: Possible Bipartition (LeetCode 886)
-// ═══════════════════════════════════════════════════════════════════════════
-
-bool possibleBipartition(int n, vector<vector<int>>& dislikes) {
-    vector<vector<int>> adj(n + 1);
-    for (auto& d : dislikes) {
-        adj[d[0]].push_back(d[1]);
-        adj[d[1]].push_back(d[0]);
-    }
-    
-    vector<int> color(n + 1, -1);
-    
-    for (int i = 1; i <= n; i++) {
-        if (color[i] != -1) continue;
-        
-        queue<int> q;
-        q.push(i);
-        color[i] = 0;
-        
-        while (!q.empty()) {
-            int u = q.front();
-            q.pop();
-            
-            for (int v : adj[u]) {
-                if (color[v] == -1) {
-                    color[v] = 1 - color[u];
-                    q.push(v);
-                } else if (color[v] == color[u]) {
-                    return false;
-                }
-            }
-        }
     }
     
     return true;
@@ -192,10 +119,10 @@ int main() {
     
     // Test Is Bipartite
     vector<vector<int>> graph1 = {{1,3},{0,2},{1,3},{0,2}};
-    cout << "1. Is bipartite (square): " << (isBipartite(graph1) ? "Yes" : "No") << "\n";
+    cout << "1. Is bipartite (square): " << (isBipartiteBFS(graph1) ? "Yes" : "No") << "\n";
     
     vector<vector<int>> graph2 = {{1,2,3},{0,2},{0,1,3},{0,2}};
-    cout << "   Is bipartite (triangle): " << (isBipartite(graph2) ? "Yes" : "No") << "\n";
+    cout << "   Is bipartite (triangle): " << (isBipartiteBFS(graph2) ? "Yes" : "No") << "\n";
     
     // Test Possible Bipartition
     vector<vector<int>> dislikes = {{1,2},{1,3},{2,4}};

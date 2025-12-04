@@ -482,37 +482,7 @@ int numRescueBoats(vector<int>& people, int limit) {
 
 
 /*
-PROBLEM 14: Two Sum Less Than K (LeetCode 1099 - Premium)
-─────────────────────────────────────────────────────────
-Find maximum sum of two numbers less than k.
-
-Input: nums = [34,23,1,24,75,33,54,8], k = 60
-Output: 58 (23 + 34)
-
-Time: O(n log n) | Space: O(1)
-*/
-int twoSumLessThanK(vector<int>& nums, int k) {
-    sort(nums.begin(), nums.end());
-    int left = 0, right = nums.size() - 1;
-    int maxSum = -1;
-    
-    while (left < right) {
-        int sum = nums[left] + nums[right];
-        
-        if (sum < k) {
-            maxSum = max(maxSum, sum);
-            left++;
-        } else {
-            right--;
-        }
-    }
-    
-    return maxSum;
-}
-
-
-/*
-PROBLEM 15: Partition Labels (LeetCode 763)
+PROBLEM 14: Partition Labels (LeetCode 763)
 ───────────────────────────────────────────
 Partition string so each letter appears in at most one part.
 

@@ -49,31 +49,20 @@ pair<vector<long long>, bool> bellmanFord(int n, int start,
 
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TEMPLATE: Bellman-Ford with K Relaxations (K edges/stops)
-// ═══════════════════════════════════════════════════════════════════════════
-
-vector<int> bellmanFordKStops(int n, int start, vector<vector<int>>& edges, int k) {
-    vector<int> dist(n, INT_MAX);
-    dist[start] = 0;
-    
-    // Relax exactly k+1 times (k stops = k+1 edges)
-    for (int i = 0; i <= k; i++) {
-        vector<int> temp = dist;  // Use previous iteration's values
-        for (auto& e : edges) {
-            int u = e[0], v = e[1], w = e[2];
-            if (dist[u] != INT_MAX) {
-                temp[v] = min(temp[v], dist[u] + w);
-            }
-        }
-        dist = temp;
-    }
-    
-    return dist;
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════
 // PROBLEM 1: Cheapest Flights Within K Stops (LeetCode 787) ⭐ GOOGLE FAVORITE
+// Bellman-Ford variant: Relax edges k+1 times.
+//
+// Time: O(k * E) | Space: O(n)
+//
+// Input: n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 1
+// Output: 200
+// Explanation: The graph is shown above.
+// The optimal path with at most 1 stop from city 0 to 2 is marked in red and has cost 200.
+//
+// Input: n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 0
+// Output: 500
+// Explanation: The graph is shown above.
+// The optimal path with no stops from city 0 to 2 is marked in red and has cost 500.
 // ═══════════════════════════════════════════════════════════════════════════
 
 int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k) {
