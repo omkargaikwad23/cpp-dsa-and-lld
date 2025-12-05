@@ -1,96 +1,207 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <climits>
+/*
+================================================================================
+        BEST SUM - Find Shortest Combination (Unbounded, elements reusable)
+================================================================================
+
+Problem: Find the shortest combination of numbers that sum to target.
+         Each number can be used multiple times.
+
+Example: bestSum(8, [2, 3, 5]) → [3, 5] (length 2, not [2,2,2,2] length 4)
+         bestSum(7, [2, 4])    → {} (impossible)
+
+================================================================================
+*/
+
+#include <bits/stdc++.h>
 using namespace std;
 
+
 /*
- * BEST SUM - Shortest Combination Problem
- * ========================================
- * 
- * Problem: Find the shortest combination of numbers from array that sums to target.
- * You can use numbers from array any number of times.
- * 
- * Example:
- * Input: target = 100, array = [4, 10, 20, 25]
- * Output: [25, 25, 25, 25] (shortest combination: 4 numbers)
- * 
- * Approach: Memoized recursion
- * - Try each number in array
- * - Find best combination for remaining sum
- * - Keep track of shortest combination
- * 
- * Time Complexity: O(m^2 * n) where m = target sum, n = array size
- * Space Complexity: O(m^2) for memoization
- */
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Solution 1: Memoization (Top-Down)                                          │
+│ Time: O(target × n × target)  |  Space: O(target²)                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+*/
 
-map<int, vector<int>> memo;
-
-pair<vector<int>, bool> bestSum(int targetSum, vector<int>& numbers) {
-    // Check memoization
-    if (memo.find(targetSum) != memo.end()) {
-        return {memo[targetSum], true};
-    }
+vector<int> bestSum(int target, vector<int>& nums, 
+                    unordered_map<int, vector<int>>& memo) {
+    if (memo.count(target)) return memo[target];
+    if (target == 0) return {0};   // Marker: valid empty combination
+    if (target < 0) return {};      // Invalid
     
-    // Base cases
-    if (targetSum == 0) {
-        return {{}, true};  // Empty combination is valid
-    }
+    vector<int> shortest;
     
-    if (targetSum < 0) {
-        return {{}, false};  // Invalid: negative sum
-    }
-    
-    vector<int> shortestCombination;
-    
-    // Try each number in the array
-    for (int num : numbers) {
-        int remainder = targetSum - num;
-        pair<vector<int>, bool> result = bestSum(remainder, numbers);
+    for (int num : nums) {
+        vector<int> result = bestSum(target - num, nums, memo);
         
-        if (result.second == true) {
-            // Valid combination found
-            vector<int> combination = result.first;
-            combination.push_back(num);  // Add current number
+        // Check if valid (contains marker 0 or has elements)
+        if (!result.empty()) {
+            // Build combination
+            vector<int> combination;
+            for (int x : result) {
+                if (x != 0) combination.push_back(x);  // Skip marker
+            }
+            combination.push_back(num);
             
-            // Update shortest combination if this is shorter
-            if (shortestCombination.empty() || combination.size() < shortestCombination.size()) {
-                shortestCombination = combination;
+            // Update if shorter
+            if (shortest.empty() || combination.size() < shortest.size()) {
+                shortest = combination;
             }
         }
     }
     
-    // Store result in memo
-    bool isValid = !shortestCombination.empty();
-    if (isValid) {
-        memo[targetSum] = shortestCombination;
+    return memo[target] = shortest;
+}
+
+vector<int> bestSumMemo(int target, vector<int>& nums) {
+    unordered_map<int, vector<int>> memo;
+    return bestSum(target, nums, memo);
+}
+
+
+/*
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Solution 2: Tabulation (Bottom-Up) - Cleaner!                               │
+│ Time: O(target × n × target)  |  Space: O(target²)                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+*/
+
+vector<int> bestSumTabu(int target, vector<int>& nums) {
+    // dp[i] = shortest combination to make sum i (empty if impossible)
+    vector<vector<int>> dp(target + 1);
+    dp[0] = {0};  // Marker: sum 0 is achievable with empty combination
+    
+    for (int i = 0; i <= target; i++) {
+        if (dp[i].empty()) continue;  // Can't reach sum i
+        
+        for (int num : nums) {
+            if (i + num > target) continue;
+            
+            // Build new combination
+            vector<int> combo;
+            for (int x : dp[i]) {
+                if (x != 0) combo.push_back(x);
+            }
+            combo.push_back(num);
+            
+            // Update if shorter or first valid
+            if (dp[i + num].empty() || combo.size() < dp[i + num].size()) {
+                dp[i + num] = combo;
+            }
+        }
     }
     
-    return {shortestCombination, isValid};
+    // Remove marker if present
+    vector<int>& result = dp[target];
+    if (!result.empty() && result[0] == 0) {
+        result.erase(result.begin());
+    }
+    
+    return result;
+}
+
+
+/*
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Solution 3: BFS - Most Intuitive for "Shortest"!                            │
+│ Time: O(target × n)  |  Space: O(target)                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Since we want SHORTEST, BFS naturally finds it first!
+*/
+
+vector<int> bestSumBFS(int target, vector<int>& nums) {
+    if (target == 0) return {};
+    
+    queue<pair<int, vector<int>>> q;  // {current_sum, combination}
+    unordered_set<int> visited;
+    
+    q.push({0, {}});
+    visited.insert(0);
+    
+    while (!q.empty()) {
+        auto [sum, combo] = q.front();
+        q.pop();
+        
+        for (int num : nums) {
+            int newSum = sum + num;
+            
+            if (newSum == target) {
+                combo.push_back(num);
+                return combo;  // BFS guarantees shortest!
+            }
+            
+            if (newSum < target && !visited.count(newSum)) {
+                visited.insert(newSum);
+                vector<int> newCombo = combo;
+                newCombo.push_back(num);
+                q.push({newSum, newCombo});
+            }
+        }
+    }
+    
+    return {};  // Not possible
+}
+
+
+/*
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ MAIN                                                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+*/
+
+void printResult(const string& label, vector<int>& result) {
+    cout << label;
+    if (result.empty()) {
+        cout << "NOT POSSIBLE\n";
+    } else {
+        cout << "[";
+        for (int i = 0; i < result.size(); i++) {
+            cout << result[i] << (i < result.size()-1 ? ", " : "");
+        }
+        cout << "] (length: " << result.size() << ")\n";
+    }
 }
 
 int main() {
-    // Example: target = 100, numbers = [4, 10, 20, 25]
-    int targetSum = 100;
-    vector<int> numbers = {4, 10, 20, 25};
+    cout << "=== Best Sum (Shortest Combination) ===\n\n";
     
-    memo.clear();  // Clear memo for fresh run
-    pair<vector<int>, bool> result = bestSum(targetSum, numbers);
+    vector<int> nums1 = {2, 3, 5};
+    vector<int> nums2 = {2, 4};
+    vector<int> nums3 = {4, 10, 20, 25};
     
-    cout << "Target: " << targetSum << endl;
-    cout << "Numbers: [4, 10, 20, 25]" << endl;
+    // Test 1
+    auto r1 = bestSumTabu(8, nums1);
+    printResult("bestSum(8, [2,3,5]) = ", r1);
+    cout << "Expected: [3,5] or [5,3]\n\n";
     
-    if (result.second == false || result.first.empty()) {
-        cout << "Result: NOT POSSIBLE" << endl;
-    } else {
-        cout << "Shortest combination: ";
-        for (int num : result.first) {
-            cout << num << " ";
-        }
-        cout << endl;
-        cout << "Length: " << result.first.size() << " numbers" << endl;
-        cout << "Expected: 25 25 25 25 (4 numbers)" << endl;
-    }
+    // Test 2
+    auto r2 = bestSumBFS(7, nums2);
+    printResult("bestSum(7, [2,4]) = ", r2);
+    cout << "Expected: NOT POSSIBLE\n\n";
+    
+    // Test 3
+    auto r3 = bestSumTabu(100, nums3);
+    printResult("bestSum(100, [4,10,20,25]) = ", r3);
+    cout << "Expected: [25,25,25,25] (length 4)\n\n";
     
     return 0;
 }
+
+/*
+================================================================================
+                            COMPARISON
+================================================================================
+
+┌─────────────────┬────────────────────────┬─────────────────────┐
+│ Approach        │ Time                   │ When to Use         │
+├─────────────────┼────────────────────────┼─────────────────────┤
+│ Memoization     │ O(target × n × target) │ When need the combo │
+│ Tabulation      │ O(target × n × target) │ When need the combo │
+│ BFS             │ O(target × n)          │ Shortest = BFS!     │
+└─────────────────┴────────────────────────┴─────────────────────┘
+
+KEY INSIGHT: When finding "shortest/minimum steps", BFS is often optimal!
+
+================================================================================
+*/

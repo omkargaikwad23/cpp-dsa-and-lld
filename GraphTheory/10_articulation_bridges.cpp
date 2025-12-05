@@ -14,9 +14,61 @@ Uses Tarjan's low-link values | O(V + E)
 #include <bits/stdc++.h>
 using namespace std;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TEMPLATE: Find Bridges (Critical Edges) ⭐
-// ═══════════════════════════════════════════════════════════════════════════
+/** ═══════════════════════════════════════════════════════════════════════════
+ TEMPLATE: Find Bridges (Critical Edges) ⭐
+
+ WHAT IS A BRIDGE?
+ An edge whose removal disconnects the graph (increases number of components).
+
+ KEY INSIGHT - Tarjan's Algorithm:
+ - disc[u] = discovery time when node u was first visited during DFS
+ - low[u]  = lowest discovery time reachable from u's subtree (including back edges)
+ 
+ BRIDGE CONDITION: Edge (u -> v) is a bridge if: low[v] > disc[u]
+ 
+ Why? If low[v] > disc[u], it means:
+ - From v's subtree, we CANNOT reach u or any ancestor of u via back edges
+ - So removing edge (u,v) disconnects v's subtree from the rest
+
+ Time Complexity: O(V + E)
+ Space Complexity: O(V + E)
+
+ -----------------------------------------------------------------------------
+ EXAMPLE:
+ 
+ Input: n = 5, edges = [[0,1],[1,2],[2,0],[1,3],[3,4]]
+ 
+ Graph visualization:
+ 
+       0 --- 1 --- 3 --- 4
+        \   /
+         \ /
+          2
+ 
+ - Nodes {0,1,2} form a CYCLE (triangle) - no bridges here!
+ - Nodes 3 and 4 hang off node 1 in a chain
+
+ Output: [[1,3], [3,4]]  (TWO bridges)
+
+ DFS Trace (starting from 0):
+ 
+   Node | disc | low | Why low has this value
+   -----|------|-----|---------------------------------------------
+     0  |  0   |  0  | Can reach itself (disc=0)
+     1  |  1   |  0  | Can reach 0 via back edge 1->0 or through 2->0
+     2  |  2   |  0  | Has back edge to 0 (disc=0)
+     3  |  3   |  3  | No back edges! Can only reach disc=3 at best
+     4  |  4   |  4  | No back edges! Can only reach disc=4 at best
+
+ Bridge Detection:
+   - Edge (1,3): low[3]=3 > disc[1]=1  --> BRIDGE! 
+     (Node 3's subtree can't reach node 1 or above without this edge)
+   - Edge (3,4): low[4]=4 > disc[3]=3  --> BRIDGE!
+     (Node 4 can't reach node 3 or above without this edge)
+   - Edge (0,1): low[1]=0 <= disc[0]=0 --> Not a bridge (cycle exists)
+   - Edge (1,2): low[2]=0 <= disc[1]=1 --> Not a bridge (cycle exists)
+
+ ═══════════════════════════════════════════════════════════════════════════ */
 
 vector<vector<int>> findBridges(int n, vector<vector<int>>& adj) {
     vector<int> disc(n, -1), low(n);
@@ -124,6 +176,29 @@ vector<vector<int>> criticalConnections(int n, vector<vector<int>>& connections)
                 dfs(v, u);
                 low[u] = min(low[u], low[v]);
                 
+                // Bridge condition: no back edge from v's subtree to u or above
+                // Why? If low[v] > disc[u], it means:
+                // - From v's subtree, we CANNOT reach u or any ancestor of u via back edges
+                // - So removing edge (u,v) disconnects v's subtree from the rest
+                //
+                // Example:
+                //   Consider: A --- B --- C
+                //                    |
+                //                    D
+                //   If DFS visits A(1) → B(2) → C(3) → D(4)
+                //   - Edge (B, C): low[C] = 3, disc[B] = 2
+                //     Since 3 > 2, edge (B, C) is a bridge ✓
+                //   - Edge (B, D): low[D] = 4, disc[B] = 2
+                //     Since 4 > 2, edge (B, D) is a bridge ✓
+                //
+                // Counter-example (NOT a bridge):
+                //   Consider: A --- B --- C
+                //            |           |
+                //            └-----------┘
+                //   If DFS visits A(1) → B(2) → C(3), then back-edge C→A found
+                //   - Edge (B, C): low[C] = 1 (can reach A via back-edge)
+                //     disc[B] = 2
+                //     Since 1 < 2, edge (B, C) is NOT a bridge (there's an alternative path)
                 if (low[v] > disc[u]) {
                     bridges.push_back({u, v});
                 }

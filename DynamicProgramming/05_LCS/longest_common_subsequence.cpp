@@ -28,7 +28,7 @@ dp[i][j] = LCS of s1[0..i-1] and s2[0..j-1]
 If s1[i-1] == s2[j-1]: dp[i][j] = dp[i-1][j-1] + 1
 Else: dp[i][j] = max(dp[i-1][j], dp[i][j-1])
 
-Time: O(m*n) | Space: O(n)
+Time: O(m*n) | Space: O(m*n)
 */
 int longestCommonSubsequence(string text1, string text2) {
     int m = text1.size(), n = text2.size();

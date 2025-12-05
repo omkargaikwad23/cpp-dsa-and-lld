@@ -11,6 +11,33 @@ USE WHEN:
 TIME: O(V³)
 SPACE: O(V²)
 
+Explanation:
+ - dist[i][j] = shortest distance from node i to node j
+ - n = number of nodes
+ - edges = list of edges
+ - k = intermediate node
+ - i = source node
+ - j = destination node
+
+ Time Complexity: O(V³)
+ Space Complexity: O(V²)
+
+ Input: n = 4, edges = [[0,1,3],[1,2,1],[1,3,4],[2,3,1]]
+ Output: [[0,3,4,5],[3,0,1,2],[4,1,0,1],[5,2,1,0]]
+
+ Example:
+ 
+ 0 --- 1 --- 3
+  \   /
+   \ /
+    2
+
+ Explanation:
+ The shortest path from node 0 to node 3 is 5 (0 -> 1 -> 3).
+ The shortest path from node 1 to node 2 is 1 (1 -> 2).
+ The shortest path from node 1 to node 3 is 2 (1 -> 3).
+ The shortest path from node 2 to node 3 is 1 (2 -> 3).
+
 ================================================================================
 */
 

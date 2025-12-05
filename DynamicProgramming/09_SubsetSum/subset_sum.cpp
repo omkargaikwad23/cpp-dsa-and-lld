@@ -28,6 +28,17 @@ Check if subset with target sum exists.
 
 dp[i] = true if sum i is achievable
 
+Example:
+Input: nums = [1, 2, 3, 4], target = 5
+Output: true
+Explanation: The subset [1, 4] sums to 5.
+Draw the dp table:
+0 1 2 3 4 5
+1 1 0 0 0 0
+2 1 0 1 0 0
+3 1 0 1 1 0
+4 1 0 1 1 1
+
 Time: O(n * target) | Space: O(target)
 */
 bool subsetSumExists(vector<int>& nums, int target) {
@@ -35,7 +46,7 @@ bool subsetSumExists(vector<int>& nums, int target) {
     dp[0] = true;
     
     for (int num : nums) {
-        for (int j = target; j >= num; j--) {
+        for (int j = target; j >= num; j--) { // BACKWARDS! (because we can reuse the same element)
             dp[j] = dp[j] || dp[j - num];
         }
     }
