@@ -15,6 +15,49 @@ LeetCode Problems:
 - 1049. Last Stone Weight II
 
 ================================================================================
+                    WHY REVERSE ITERATION? (CRITICAL CONCEPT!)
+================================================================================
+
+When converting 2D DP to 1D, iteration direction determines item reuse:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  REVERSE (right→left): 0/1 Knapsack - each item used AT MOST ONCE          │
+│  FORWARD (left→right): Unbounded Knapsack - each item used UNLIMITED times │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+EXAMPLE: nums = [2], target = 4
+─────────────────────────────────
+
+REVERSE (CORRECT for 0/1):
+    Initial:  dp = [T, F, F, F, F]  (indices 0-4)
+    j=4: dp[4] = dp[4] || dp[2] = F || F = F
+    j=3: dp[3] = dp[3] || dp[1] = F || F = F
+    j=2: dp[2] = dp[2] || dp[0] = F || T = T  ✓
+    Result:   dp = [T, F, T, F, F]
+    → dp[4] = FALSE (can't make 4 with single item 2) ✓ CORRECT!
+
+FORWARD (WRONG for 0/1):
+    Initial:  dp = [T, F, F, F, F]
+    j=2: dp[2] = dp[2] || dp[0] = F || T = T  ✓
+    j=3: dp[3] = dp[3] || dp[1] = F || F = F
+    j=4: dp[4] = dp[4] || dp[2] = F || T = T  ✗ WRONG!
+    Result:   dp = [T, F, T, F, T]
+    → dp[4] = TRUE (used item 2 TWICE: 2+2=4) ✗ INCORRECT!
+
+WHY THIS HAPPENS:
+─────────────────
+• REVERSE: When computing dp[j], dp[j-num] still has OLD value (before current item)
+           → Each item considered only ONCE
+
+• FORWARD: When computing dp[j], dp[j-num] may have NEW value (already updated)
+           → Same item can be used MULTIPLE times
+
+MEMORY TRICK:
+─────────────
+    "0/1 = Only once = gO back"     (REVERSE)
+    "Unlimited = go Forward"         (FORWARD)
+
+================================================================================
 */
 
 #include <bits/stdc++.h>
@@ -25,8 +68,14 @@ PROBLEM 1: Classic 0/1 Knapsack
 ───────────────────────────────
 Given weights and values, maximize value with capacity W.
 
-dp[i][w] = max value using first i items with capacity w
-dp[i][w] = max(dp[i-1][w], dp[i-1][w-wt[i]] + val[i])
+2D Recurrence (conceptual):
+    dp[i][w] = max value using first i items with capacity w
+    dp[i][w] = max(dp[i-1][w], dp[i-1][w-wt[i]] + val[i])
+                   ↑ skip item    ↑ take item (uses PREVIOUS row)
+
+1D Space Optimization (code below):
+    dp[w] = max(dp[w], dp[w - wt[i]] + val[i])
+    Key: Iterate w BACKWARDS so dp[w-wt[i]] still has previous row's value
 
 Time: O(n*W) | Space: O(W)
 */
@@ -43,6 +92,60 @@ int knapsack(vector<int>& wt, vector<int>& val, int W) {
     
     return dp[W];
 }
+
+
+/*
+────────────────────────────────────────────────────────────────────────────────
+RECURSIVE + MEMOIZATION APPROACH (for understanding)
+────────────────────────────────────────────────────────────────────────────────
+
+This shows the INTUITION behind 0/1 knapsack:
+- At each item, we have 2 choices: PICK or SKIP
+- State: (index, remaining_capacity)
+- Memoize to avoid recomputation
+
+Recursive → Memoization → Bottom-up DP → Space Optimized 1D DP
+*/
+int knapsackMemo(vector<int>& wt, vector<int>& val, int i, int w, 
+                 vector<vector<int>>& memo) {
+    // Base case: no items left OR no capacity
+    if (i < 0 || w == 0) return 0;
+    
+    // Already computed?
+    if (memo[i][w] != -1) return memo[i][w];
+    
+    // Choice 1: SKIP current item
+    int skip = knapsackMemo(wt, val, i - 1, w, memo);
+    
+    // Choice 2: PICK current item (only if it fits)
+    int pick = 0;
+    if (wt[i] <= w) {
+        pick = val[i] + knapsackMemo(wt, val, i - 1, w - wt[i], memo);
+    }
+    
+    // Take the better choice
+    memo[i][w] = max(skip, pick);
+    return memo[i][w];
+}
+
+int knapsackRecursive(vector<int>& wt, vector<int>& val, int W) {
+    int n = wt.size();
+    vector<vector<int>> memo(n, vector<int>(W + 1, -1));
+    return knapsackMemo(wt, val, n - 1, W, memo);
+}
+
+/*
+UNDERSTANDING THE CONVERSION:
+─────────────────────────────
+Recursive:   knapsackMemo(wt, val, i-1, w, memo)        → uses previous item's result
+                                  ↓
+Bottom-up:   dp[i][w] = max(dp[i-1][w], ...)            → row i depends on row i-1
+                                  ↓
+1D Space:    for w = W to wt[i]:                        → iterate BACKWARDS
+             dp[w] = max(dp[w], dp[w-wt[i]] + val[i])     so dp[w-wt[i]] has old value
+
+The BACKWARDS iteration in 1D simulates accessing "previous row" in 2D!
+*/
 
 
 /*

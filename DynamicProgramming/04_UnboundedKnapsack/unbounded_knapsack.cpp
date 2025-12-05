@@ -88,6 +88,104 @@ int changePermutations(int amount, vector<int>& coins) {
     return dp[amount];
 }
 
+/*
+────────────────────────────────────────────────────────────────────────────────
+        COMBINATIONS vs PERMUTATIONS: WHY LOOP ORDER MATTERS (CRITICAL!)
+────────────────────────────────────────────────────────────────────────────────
+
+Example: amount = 3, coins = [1, 2]
+- COMBINATIONS (order doesn't matter): {1,1,1}, {1,2}           → 2 ways
+- PERMUTATIONS (order matters):        {1,1,1}, {1,2}, {2,1}    → 3 ways
+
+────────────────────────────────────────────────────────────────────────────────
+COINS FIRST → COMBINATIONS (LeetCode 518: Coin Change II)
+────────────────────────────────────────────────────────────────────────────────
+
+    for (int coin : coins) {                    // Process coin 1 fully, THEN coin 2
+        for (int i = coin; i <= amount; i++) {
+            dp[i] += dp[i - coin];
+        }
+    }
+
+Trace (amount=3, coins=[1,2]):
+
+    Initial:    dp = [1, 0, 0, 0]
+
+    Process coin=1 COMPLETELY:
+      i=1: dp[1] += dp[0] → dp[1] = 1    (ways: {1})
+      i=2: dp[2] += dp[1] → dp[2] = 1    (ways: {1,1})
+      i=3: dp[3] += dp[2] → dp[3] = 1    (ways: {1,1,1})
+      
+    After coin 1: dp = [1, 1, 1, 1]
+
+    Process coin=2:
+      i=2: dp[2] += dp[0] → dp[2] = 2    (ways: {1,1}, {2})
+      i=3: dp[3] += dp[1] → dp[3] = 2    (ways: {1,1,1}, {1,2})
+      
+    Final: dp = [1, 1, 2, 2]   →   dp[3] = 2 ✓
+
+WHY? Once done with coin 1, we NEVER go back. So {2,1} is impossible.
+     We're essentially saying: "use all 1s first, then all 2s"
+
+────────────────────────────────────────────────────────────────────────────────
+AMOUNT FIRST → PERMUTATIONS (LeetCode 377: Combination Sum IV)
+────────────────────────────────────────────────────────────────────────────────
+
+    for (int i = 1; i <= amount; i++) {         // For each amount, try ALL coins
+        for (int coin : coins) {
+            if (coin <= i) dp[i] += dp[i - coin];
+        }
+    }
+
+Trace (amount=3, coins=[1,2]):
+
+    Initial: dp = [1, 0, 0, 0]
+
+    i=1: Try ALL coins
+      coin=1: dp[1] += dp[0] → dp[1] = 1    (ways: {1})
+      coin=2: skip (2 > 1)
+      
+    i=2: Try ALL coins
+      coin=1: dp[2] += dp[1] → dp[2] = 1    (ways: {1,1})
+      coin=2: dp[2] += dp[0] → dp[2] = 2    (ways: {1,1}, {2})
+      
+    i=3: Try ALL coins
+      coin=1: dp[3] += dp[2] → dp[3] = 2    (ways: {1,1,1}, {2,1})
+      coin=2: dp[3] += dp[1] → dp[3] = 3    (ways: {1,1,1}, {2,1}, {1,2})
+      
+    Final: dp = [1, 1, 2, 3]   →   dp[3] = 3 ✓
+
+WHY? At each amount, we consider ALL coins. The LAST coin can be anything.
+     {1,2} and {2,1} are different sequences → both counted!
+
+────────────────────────────────────────────────────────────────────────────────
+VISUAL SUMMARY
+────────────────────────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  COINS FIRST:   Use all coin[0], then all coin[1], then all coin[2]...      │
+│                 → Fixed order of coin types → COMBINATIONS                   │
+│                                                                              │
+│  AMOUNT FIRST:  For each amount, "what was the LAST coin used?"             │
+│                 → Any coin can be last → All ORDERINGS counted               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+MEMORY TRICK:
+    "Coins first = Committed order = Combinations"
+    "Amount first = Any last coin = All arrangements (Permutations)"
+
++─────────────────────────+─────────────────────────+─────────────────────────+
+| Aspect                  | Combinations            | Permutations            |
++─────────────────────────+─────────────────────────+─────────────────────────+
+| Outer Loop              | Coins                   | Amount                  |
+| Inner Loop              | Amount                  | Coins                   |
+| {1,2} vs {2,1}         | Same (counted once)     | Different (counted 2x)  |
+| LeetCode                | 518. Coin Change II     | 377. Combination Sum IV |
++─────────────────────────+─────────────────────────+─────────────────────────+
+
+================================================================================
+*/
+
 
 /*
 PROBLEM 3: Perfect Squares (LeetCode 279)
@@ -138,20 +236,41 @@ int combinationSum4(vector<int>& nums, int target) {
 /*
 PROBLEM 5: Integer Break (LeetCode 343)
 ───────────────────────────────────────
-Break n into sum of positive integers, maximize product.
+Break n into sum of positive integers (at least 2 parts), maximize product.
 
-dp[i] = max product for integer i
-dp[i] = max(j * (i-j), j * dp[i-j]) for j = 1 to i-1
+Key Insight:
+- dp[i] = max product we can get by breaking i (or keeping i as-is for internal use)
+- For num >= 4: try all first pieces i, multiply by dp[num-i]
+- Base cases: dp[1]=1, dp[2]=2, dp[3]=3 (these are optimal pieces to use internally)
+- Edge case: n=2 → must break → 1*1=1, n=3 → must break → 1*2=2
+
+Why start loop from i=2?
+- Breaking off 1 is never optimal (1 * rest < rest)
+- 2 and 3 are the "magic" numbers that maximize products
 
 Time: O(n²) | Space: O(n)
 */
 int integerBreak(int n) {
+    // Edge cases: must break into at least 2 parts
+    // n=2: 1+1 → product=1, n=3: 1+2 → product=2
+    if (n <= 3) return n - 1;
+    
     vector<int> dp(n + 1, 0);
     
-    for (int i = 2; i <= n; i++) {
-        for (int j = 1; j < i; j++) {
-            dp[i] = max(dp[i], max(j * (i - j), j * dp[i - j]));
+    // Base cases: dp[1]=1, dp[2]=2, dp[3]=3
+    for(int num = 1; num <= 3; num++) 
+        dp[num] = num;
+    
+    // For num >= 4, breaking always helps
+    for (int num = 4; num <= n; num++) {
+        int ans = num;  // Start with num itself (used when num is a piece, not the final answer)
+        
+        // Try breaking off piece of size i, multiply by optimal product of remaining
+        for (int i = 2; i < num; i++) {
+            ans = max(ans, i * dp[num - i]);
         }
+        
+        dp[num] = ans;
     }
     
     return dp[n];
@@ -214,20 +333,22 @@ n dice with k faces. Count ways to get target sum.
 Time: O(n * target * k) | Space: O(target)
 */
 int numRollsToTarget(int n, int k, int target) {
-    const int MOD = 1e9 + 7;
-    vector<int> dp(target + 1, 0);
+    const int mod = 1e9 + 7;
+    vector<int> dp(target + 1);
     dp[0] = 1;
     
-    for (int dice = 0; dice < n; dice++) {
-        vector<int> newDp(target + 1, 0);
-        for (int sum = 1; sum <= target; sum++) {
-            for (int face = 1; face <= k && face <= sum; face++) {
-                newDp[sum] = (newDp[sum] + dp[sum - face]) % MOD;
+    for(int d = 1; d <= n; d++) { // number of dice
+        vector<int> dp1(target + 1);
+
+        // number of faces on each die
+        for(int j = 1; j <= k; j++) { 
+            // target sum we need to achieve by rolling n dice
+            for(int i = j; i <= target; i++) { 
+                dp1[i] = (dp1[i] + dp[i - j]) % mod;
             }
         }
-        dp = newDp;
+        swap(dp, dp1); 
     }
-    
     return dp[target];
 }
 
