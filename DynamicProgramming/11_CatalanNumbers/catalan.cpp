@@ -8,7 +8,7 @@ When to use:
 - Counting BSTs with n nodes
 - Polygon triangulation
 - Non-crossing partitions
-
+s
 Catalan: C(n) = C(0)*C(n-1) + C(1)*C(n-2) + ... + C(n-1)*C(0)
 Formula: C(n) = (2n)! / ((n+1)! * n!)
 

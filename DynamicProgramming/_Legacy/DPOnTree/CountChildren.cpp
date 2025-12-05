@@ -78,12 +78,6 @@ void dfsSubtreeSize(int node, int parent, vector<int>& subtreeSize, vector<vecto
 }
 
 
-/*
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ MAIN                                                                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-*/
-
 int main() {
     cout << "=== Count Descendants (DP on Tree) ===\n\n";
     

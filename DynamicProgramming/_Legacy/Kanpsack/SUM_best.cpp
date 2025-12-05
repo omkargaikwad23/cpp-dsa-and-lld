@@ -144,11 +144,6 @@ vector<int> bestSumBFS(int target, vector<int>& nums) {
 }
 
 
-/*
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ MAIN                                                                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-*/
 
 void printResult(const string& label, vector<int>& result) {
     cout << label;
