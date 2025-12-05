@@ -46,7 +46,9 @@ bool subsetSumExists(vector<int>& nums, int target) {
     dp[0] = true;
     
     for (int num : nums) {
-        for (int j = target; j >= num; j--) { // BACKWARDS! (because we can reuse the same element)
+        // BACKWARDS! (0/1 knapsack - each element used AT MOST ONCE)
+        // Going backwards ensures dp[j-num] hasn't been updated yet in this iteration
+        for (int j = target; j >= num; j--) {
             dp[j] = dp[j] || dp[j - num];
         }
     }
@@ -54,6 +56,29 @@ bool subsetSumExists(vector<int>& nums, int target) {
     return dp[target];
 }
 
+
+bool subsetSumMemo(vector<int>& nums, int i, int target, 
+                   vector<vector<int>>& memo) {
+    // Base cases
+    if (target == 0) return true;
+    if (i < 0 || target < 0) return false;
+    
+    // Already computed?
+    if (memo[i][target] != -1) return memo[i][target];
+    
+    // SKIP or PICK
+    bool skip = subsetSumMemo(nums, i - 1, target, memo);
+    bool pick = subsetSumMemo(nums, i - 1, target - nums[i], memo);
+    
+    // Take the better choice
+    return memo[i][target] = skip || pick;
+}
+
+bool subsetSumRecursive(vector<int>& nums, int target) {
+    int n = nums.size();
+    vector<vector<int>> memo(n, vector<int>(target + 1, -1));
+    return subsetSumMemo(nums, n - 1, target, memo);
+}
 
 /*
 PROBLEM 2: Count Subsets with Sum (Classic)
