@@ -50,18 +50,30 @@ int coinChange(vector<int>& coins, int amount) {
 /*
 PROBLEM 2: Coin Change II - Count Ways (LeetCode 518)
 ─────────────────────────────────────────────────────
-Count number of combinations to make amount.
+Count number of combinations to make amount (order DOESN'T matter).
 
 dp[i] = number of ways to make amount i
-Order matters: iterate coins first (combinations), then amounts.
+
+WHY COINS FIRST = COMBINATIONS?
+───────────────────────────────
+When we iterate coins in outer loop, we process them ONE BY ONE:
+"First use all coin[0]s you need, THEN move to coin[1], THEN coin[2]..."
+
+This forces a FIXED ORDER of coin types:
+- Once we move past coin[0], we NEVER go back to it
+- So {2,1} is impossible - we can't use coin[0] after using coin[1]
+- Only {1,2} is counted (coins appear in iteration order)
+
+Result: Each unique SET of coins is counted exactly ONCE.
 
 Time: O(n * amount) | Space: O(amount)
 */
-int change(int amount, vector<int>& coins) {
+int waysToMakeChange(int amount, vector<int>& coins) {
     vector<int> dp(amount + 1, 0);
     dp[0] = 1;
     
-    // Coins first = combinations (order doesn't matter)
+    // COINS FIRST → we commit to coin order → no duplicate sequences
+    // After processing coin[0], we never revisit it → COMBINATIONS
     for (int coin : coins) {
         for (int i = coin; i <= amount; i++) {  // FORWARDS (unlimited)
             dp[i] += dp[i - coin];
@@ -71,12 +83,32 @@ int change(int amount, vector<int>& coins) {
     return dp[amount];
 }
 
-// If we want permutations (order matters), swap loops
+/*
+PERMUTATIONS VERSION (LeetCode 377: Combination Sum IV)
+───────────────────────────────────────────────────────
+Count number of permutations to make amount (order MATTERS).
+
+WHY AMOUNT FIRST = PERMUTATIONS?
+────────────────────────────────
+When we iterate amount in outer loop, for EACH amount we ask:
+"What was the LAST coin used to reach this amount?"
+
+The last coin can be ANY coin from our list!
+- To make amount=3: last coin could be 1 (from dp[2]) OR 2 (from dp[1])
+- dp[3] = dp[2] + dp[1] = ways ending with 1 + ways ending with 2
+
+This means {1,2} and {2,1} are counted SEPARATELY:
+- {1,2}: dp[1] contributes to dp[3] (last coin = 2)
+- {2,1}: dp[2] contributes to dp[3] (last coin = 1)
+
+Result: All orderings/sequences are counted as DIFFERENT ways.
+*/
 int changePermutations(int amount, vector<int>& coins) {
     vector<int> dp(amount + 1, 0);
     dp[0] = 1;
     
-    // Amount first = permutations (1,2 and 2,1 are different)
+    // AMOUNT FIRST → for each amount, ANY coin can be last → PERMUTATIONS
+    // At each step, we consider ALL coins fresh (no commitment to order)
     for (int i = 1; i <= amount; i++) {
         for (int coin : coins) {
             if (coin <= i) {
@@ -366,7 +398,7 @@ int main() {
     
     // Coin Change Count
     vector<int> coins2 = {1, 2, 5};
-    cout << "2. Ways to make 5: " << change(5, coins2) << "\n";
+    cout << "2. Ways to make 5: " << waysToMakeChange(5, coins2) << "\n";
     
     // Perfect Squares
     cout << "3. Min squares for 12: " << numSquares(12) << "\n";
