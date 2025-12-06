@@ -3,15 +3,66 @@
                     DIJKSTRA'S ALGORITHM
 ================================================================================
 
-USE WHEN:
-- Shortest path with NON-NEGATIVE weights
-- Single source shortest path
-- Network routing
+Finds SHORTEST PATH from a single source to all other vertices in a graph
+with NON-NEGATIVE edge weights.
+
+================================================================================
+                      HIGH-LEVEL ALGORITHM
+================================================================================
+
+1. Initialize distances: dist[source] = 0, dist[others] = ∞
+2. Use a MIN-HEAP (priority queue) to always process the closest unvisited node
+3. For each node u popped from heap:
+   - For each neighbor v:
+     - If dist[u] + weight(u,v) < dist[v]:
+       - Update dist[v]
+       - Push (dist[v], v) to heap
+4. Repeat until heap is empty
+
+KEY INSIGHT: Greedy approach works because all edges are non-negative!
+             Once a node is popped from min-heap, we've found its shortest path.
+
+================================================================================
+                    COMPLEXITY ANALYSIS
+================================================================================
 
 TIME: O((V + E) log V) with priority queue
+
+  WHY?
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ • Each vertex is processed at most once          → O(V) extractions    │
+  │ • Each edge is relaxed at most once              → O(E) relaxations    │
+  │ • Each extraction from min-heap                  → O(log V)            │
+  │ • Each insertion to min-heap                     → O(log V)            │
+  │                                                                        │
+  │ Total: O(V) extractions × O(log V) + O(E) insertions × O(log V)        │
+  │      = O(V log V) + O(E log V)                                         │
+  │      = O((V + E) log V)                                                │
+  │                                                                        │
+  │ For connected graphs: E ≥ V-1, so this simplifies to O(E log V)        │
+  └────────────────────────────────────────────────────────────────────────┘
+
 SPACE: O(V + E)
 
-⚠️ Does NOT work with negative weights! Use Bellman-Ford instead.
+  WHY?
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ • Adjacency list storage                         → O(V + E)            │
+  │ • Distance array                                 → O(V)                │
+  │ • Priority queue (can have at most E entries)    → O(E) worst case     │
+  │                                                                        │
+  │ Note: PQ can have duplicates (stale entries), but bounded by O(E)      │
+  └────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                         USE WHEN
+================================================================================
+
+✅ Shortest path with NON-NEGATIVE weights
+✅ Single source shortest path (one source to all destinations)
+✅ Network routing, GPS navigation
+✅ Graph has moderate density
+
+⚠️ Does NOT work with NEGATIVE weights! Use Bellman-Ford instead.
 
 ================================================================================
 */
@@ -134,6 +185,7 @@ int networkDelayTime(vector<vector<int>>& times, int n, int k) {
 // ═══════════════════════════════════════════════════════════════════════════
 // PROBLEM 2: Path With Minimum Effort (LeetCode 1631) ⭐
 // Modified Dijkstra: minimize MAX edge weight
+// Time: O((V + E) log V) | Space: O(V + E)
 // ═══════════════════════════════════════════════════════════════════════════
 
 int minimumEffortPath(vector<vector<int>>& heights) {
@@ -170,6 +222,8 @@ int minimumEffortPath(vector<vector<int>>& heights) {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PROBLEM 3: Swim in Rising Water (LeetCode 778)
+// Modified Dijkstra: minimize MAX grid value
+// Time: O((V + E) log V) | Space: O(V + E)
 // ═══════════════════════════════════════════════════════════════════════════
 
 int swimInWater(vector<vector<int>>& grid) {

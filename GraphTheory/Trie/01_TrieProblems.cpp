@@ -25,7 +25,8 @@ public:
         TrieNode* node = root;
         for (char c : word) {
             int i = c - 'a';
-            if (!node->children[i]) node->children[i] = new TrieNode();
+            if (!node->children[i]) 
+                node->children[i] = new TrieNode(); // create new node if it doesn't exist
             node = node->children[i];
         }
         node->isEnd = true;
@@ -35,7 +36,8 @@ public:
         TrieNode* node = root;
         for (char c : word) {
             int i = c - 'a';
-            if (!node->children[i]) return false;
+            if (!node->children[i]) 
+                return false; // return false if the character doesn't exist
             node = node->children[i];
         }
         return node->isEnd;
@@ -45,7 +47,8 @@ public:
         TrieNode* node = root;
         for (char c : prefix) {
             int i = c - 'a';
-            if (!node->children[i]) return false;
+            if (!node->children[i]) 
+                return false; // return false if the character doesn't exist
             node = node->children[i];
         }
         return true;

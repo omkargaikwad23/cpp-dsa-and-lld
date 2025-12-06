@@ -46,12 +46,12 @@ public:
         
         // Union by rank
         if (rank_[px] < rank_[py]) swap(px, py);
-        parent[py] = px;
+        parent[py] = px; // attach smaller tree to larger tree, rank of px is now the max rank
         size_[px] += size_[py];
-        if (rank_[px] == rank_[py]) rank_[px]++;
+        if (rank_[px] == rank_[py]) rank_[px]++; // if ranks are equal, increment rank of px
         
-        components--;
-        return true;
+        components--; // decrement number of components
+        return true; // return true if union is successful
     }
     
     bool connected(int x, int y) { return find(x) == find(y); }
