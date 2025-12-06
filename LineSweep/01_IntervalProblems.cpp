@@ -53,25 +53,17 @@ Approach: Line sweep - count overlapping intervals at any point
 Time: O(n log n) | Space: O(n)
 */
 int minMeetingRooms(vector<vector<int>>& intervals) {
-    vector<pair<int, int>> events;
-    
+    map<int, int> timeline;
     for (auto& interval : intervals) {
-        events.push_back({interval[0], 1});   // Meeting starts
-        events.push_back({interval[1], -1});  // Meeting ends
+        timeline[interval[0]]++;
+        timeline[interval[1]]--;
     }
-    
-    // Sort by time; if tie, end (-1) before start (+1)
-    sort(events.begin(), events.end(), [](auto& a, auto& b) {
-        if (a.first != b.first) return a.first < b.first;
-        return a.second < b.second;  // -1 before +1
-    });
     
     int rooms = 0, maxRooms = 0;
-    for (auto& [time, type] : events) {
-        rooms += type;
+    for (auto& [time, count] : timeline) {
+        rooms += count;
         maxRooms = max(maxRooms, rooms);
     }
-    
     return maxRooms;
 }
 
