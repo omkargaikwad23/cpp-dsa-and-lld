@@ -141,29 +141,33 @@ double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
     int left = 0, right = m;
     
     while (left <= right) {
-        int partitionX = left + (right - left) / 2;
-        int partitionY = (m + n + 1) / 2 - partitionX;
+        int partitionX = left + (right - left) / 2; // partitionX is the partition index in nums1
+        int partitionY = (m + n + 1) / 2 - partitionX; // partitionY is the partition index in nums2
         
-        // Edge values
+        //if partitionX is 0 it means nothing is there on left side. Use -INF for maxLeftX
+        //if partitionX is length of input then there is nothing on right side. Use +INF for minRightX
         int maxLeftX = (partitionX == 0) ? INT_MIN : nums1[partitionX - 1];
         int minRightX = (partitionX == m) ? INT_MAX : nums1[partitionX];
         
+        // similarly for nums2
         int maxLeftY = (partitionY == 0) ? INT_MIN : nums2[partitionY - 1];
         int minRightY = (partitionY == n) ? INT_MAX : nums2[partitionY];
         
         // Check if valid partition
         if (maxLeftX <= minRightY && maxLeftY <= minRightX) {
             // Found correct partition
+            // if the combined length is even, then the median is the average of the max of the left and the min of the right
+            // if the combined length is odd, then the median is the max of the left
             if ((m + n) % 2 == 0) {
                 return (max(maxLeftX, maxLeftY) + min(minRightX, minRightY)) / 2.0;
             } else {
                 return max(maxLeftX, maxLeftY);
             }
         }
-        else if (maxLeftX > minRightY) {
+        else if (maxLeftX > minRightY) { //we are too far on right side for partitionX. Go on left side.
             right = partitionX - 1;  // Move left in nums1
         }
-        else {
+        else { //we are too far on left side for partitionX. Go on right side.
             left = partitionX + 1;   // Move right in nums1
         }
     }
