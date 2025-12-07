@@ -51,7 +51,18 @@ int findPeakElement(vector<int>& nums) {
     
     return left;
 }
-// Example: [1,2,1,3,5,6,4] → returns 5 (index of 6)
+/*
+Example: [1,2,1,3,5,6,4] → returns 5 (index of 6) 
+
+Explanation:
+- We start with left = 0 and right = 6
+- We calculate mid = (0 + 6) / 2 = 3
+- We check if nums[3] > nums[4] (3 > 5)
+- Since 3 < 5, we move left to mid + 1 = 4
+- We calculate mid = (4 + 6) / 2 = 5
+- We check if nums[5] > nums[6] (6 > 4)
+- Since 6 > 4, we move right to mid = 5
+*/
 
 
 /*

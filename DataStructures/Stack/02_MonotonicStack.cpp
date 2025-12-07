@@ -265,9 +265,9 @@ int largestRectangleArea(vector<int>& heights) {
     int maxArea = 0;
     
     for (int i = 0; i <= n; i++) {
-        int currHeight = (i == n) ? 0 : heights[i];
+        int currHeight = (i == n) ? 0 : heights[i]; // to process remaining bars in the stack
         
-        // pop larger/equal elements
+        // Pop elements taller than current (they can't extend further right)
         while (!stk.empty() && heights[stk.top()] > currHeight) {
             int height = heights[stk.top()];
             stk.pop();

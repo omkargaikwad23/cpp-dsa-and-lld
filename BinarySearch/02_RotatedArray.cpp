@@ -132,9 +132,8 @@ bool searchRotatedDuplicates(vector<int>& nums, int target) {
 
 /*
 ================================================================================
-PATTERN 3: FIND MINIMUM IN ROTATED SORTED ARRAY
+PATTERN 3: FIND MINIMUM IN ROTATED SORTED ARRAY (LeetCode 153)
 ================================================================================
-LeetCode: 153. Find Minimum in Rotated Sorted Array
 Problem: Find the minimum element (no duplicates)
 Time: O(log n), Space: O(1)
 

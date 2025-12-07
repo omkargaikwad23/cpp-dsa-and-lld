@@ -61,29 +61,92 @@ dp[i][j] = max coins from bursting balloons in (i, j) exclusive
 
 Time: O(n³) | Space: O(n²)
 */
-int maxCoins(vector<int>& nums) {
+// ─────────────────────────────────────────────────────────────────────────────
+// APPROACH 1: Iterative Bottom-Up DP (with virtual balloons)
+// ─────────────────────────────────────────────────────────────────────────────
+int maxCoinsIterative(vector<int>& nums) {
     int n = nums.size();
     
-    // Add virtual balloons at boundaries
+    // Step 1: Add virtual balloons with value 1 at both ends
+    // Original: [3, 1, 5, 8]  →  Modified: [1, 3, 1, 5, 8, 1]
+    // This simplifies boundary handling (no special cases for edges)
     vector<int> arr(n + 2, 1);
     for (int i = 0; i < n; i++) arr[i + 1] = nums[i];
     
-    // dp[i][j] = max coins for range (i, j) exclusive
+    // Step 2: dp[i][j] = max coins for bursting all balloons in range (i, j) EXCLUSIVE
+    // Note: (i, j) exclusive means balloons at index i and j are NOT burst
+    // Example: dp[0][3] = max coins from bursting balloons at indices 1, 2 (not 0 or 3)
     vector<vector<int>> dp(n + 2, vector<int>(n + 2, 0));
     
+    // Step 3: Build solution bottom-up by increasing window length
+    // len = number of balloons to burst in the range
     for (int len = 1; len <= n; len++) {
+        // i = left boundary (exclusive), j = right boundary (exclusive)
+        // We need j = i + len + 1 to have 'len' balloons between i and j
         for (int i = 0; i + len + 1 <= n + 1; i++) {
             int j = i + len + 1;
             
-            for (int k = i + 1; k < j; k++) {  // k is last to burst
+            // Step 4: Try each balloon k as the LAST one to burst in range (i, j)
+            // Key insight: When k is burst last, arr[i] and arr[j] are its neighbors
+            // because all other balloons between them are already gone
+            for (int k = i + 1; k < j; k++) {
+                // Coins from bursting k last = arr[i] * arr[k] * arr[j]
+                // Plus: coins from bursting left subproblem + right subproblem
                 int coins = arr[i] * arr[k] * arr[j];
                 dp[i][j] = max(dp[i][j], dp[i][k] + dp[k][j] + coins);
             }
         }
     }
     
+    // Answer: max coins for bursting all balloons between virtual boundaries
     return dp[0][n + 1];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPROACH 2: Recursive Top-Down with Memoization (simpler, no virtual balloons)
+// ─────────────────────────────────────────────────────────────────────────────
+class BurstBalloonsMemo {
+    vector<vector<int>> memo;
+    
+    // Returns max coins for bursting all balloons in range [left, right] INCLUSIVE
+    int dfs(vector<int>& nums, int left, int right) {
+        // Base case: no balloons in range
+        if (left > right) return 0;
+        
+        if (memo[left][right] != -1) return memo[left][right];
+        
+        int maxCoins = 0;
+        
+        // Try each balloon i as the LAST one to burst in range [left, right]
+        for (int i = left; i <= right; i++) {
+            // When balloon i is burst last in [left, right]:
+            // - All balloons in [left, i-1] are already burst
+            // - All balloons in [i+1, right] are already burst
+            // - So neighbors of i are nums[left-1] and nums[right+1]
+            //   (or 1 if out of bounds)
+            
+            int leftNeighbor = (left > 0) ? nums[left - 1] : 1;
+            int rightNeighbor = (right < nums.size() - 1) ? nums[right + 1] : 1;
+            
+            // Coins from bursting balloon i last
+            int coins = leftNeighbor * nums[i] * rightNeighbor;
+            
+            // Add coins from left and right subproblems
+            coins += dfs(nums, left, i - 1) + dfs(nums, i + 1, right);
+            
+            maxCoins = max(maxCoins, coins);
+        }
+        
+        return memo[left][right] = maxCoins;
+    }
+    
+public:
+    int maxCoins(vector<int>& nums) {
+        int n = nums.size();
+        memo.assign(n, vector<int>(n, -1));
+        return dfs(nums, 0, n - 1);
+    }
+};
 
 
 /*
