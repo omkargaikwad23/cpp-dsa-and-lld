@@ -228,6 +228,45 @@ Schedule tasks with cooldown n between same tasks. Find min time.
 Input: tasks = ["A","A","A","B","B","B"], n = 2
 Output: 8 (A->B->idle->A->B->idle->A->B)
 
+─────────────────────────────────────────────────────────────────
+FORMULA: (maxFreq - 1) * (n + 1) + maxCount
+─────────────────────────────────────────────────────────────────
+
+Visual: Arrange most frequent task first, leaving n gaps:
+
+    A _ _ | A _ _ | A        (n=2, so each slot has n+1=3 positions)
+    └─────┘ └─────┘
+     slot    slot    final
+
+Fill gaps with other tasks:
+
+    A B _ | A B _ | A B
+    └─────┘ └─────┘ └───┘
+     slot1   slot2   final
+
+Formula breakdown:
+┌──────────────┬────────────────────────────────────────────────────┐
+│ (maxFreq - 1)│ Number of COMPLETE slots (last one is partial)    │
+│ (n + 1)      │ Size of each slot (1 task + n cooldown positions) │
+│ maxCount     │ Tasks in final slot (all tasks with max frequency)│
+└──────────────┴────────────────────────────────────────────────────┘
+
+Example: maxFreq=3, maxCount=2, n=2
+         = (3-1) * (2+1) + 2 = 2 * 3 + 2 = 8
+
+Edge case: If many diverse tasks exist, no idle time needed
+           → answer = max(formula, tasks.size())
+─────────────────────────────────────────────────────────────────
+
+Dry Run:
+tasks = ["A","A","A","B","B","B"], n = 2
+freq = [3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+maxFreq = 3
+maxCount = 2
+result = (maxFreq - 1) * (n + 1) + maxCount = 8
+return max(result, (int)tasks.size()) = 8
+
+
 Time: O(m) | Space: O(1)
 */
 int leastInterval(vector<char>& tasks, int n) {

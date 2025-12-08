@@ -146,10 +146,26 @@ PROBLEM 4: Russian Doll Envelopes (LeetCode 354)
 Sort by width ascending, height descending.
 Then LIS on heights.
 
+Example:
+envelopes = [[5,4],[6,4],[6,7],[2,3]]
+
+Sorted (width↑, height↓ for same width):
+[[2,3], [5,4], [6,7], [6,4]]
+
+Heights to process: [3, 4, 7, 4]
+
+i = 0, h = 3, tails = [3]          ✓
+i = 1, h = 4, tails = [3, 4]       ✓
+i = 2, h = 7, tails = [3, 4, 7]    ✓
+i = 3, h = 4, tails = [3, 4, 7]    ← h=4 (not 6), 4 replaces 4 (no change)
+
+return 3 ✓
+
 Time: O(n log n) | Space: O(n)
 */
 int maxEnvelopes(vector<vector<int>>& envelopes) {
     // Sort by width ascending, then height descending
+    // Prevents picking multiple same-width envelopes in LIS (same width, different height)
     sort(envelopes.begin(), envelopes.end(), [](auto& a, auto& b) {
         return a[0] == b[0] ? a[1] > b[1] : a[0] < b[0];
     });
