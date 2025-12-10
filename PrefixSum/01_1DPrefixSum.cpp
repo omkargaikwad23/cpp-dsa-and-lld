@@ -38,23 +38,6 @@ public:
 };
 
 
-/*
-PROBLEM 2: Running Sum of 1d Array (LeetCode 1480)
-──────────────────────────────────────────────────
-Return running sum array.
-
-Input: nums = [1,2,3,4]
-Output: [1,3,6,10]
-
-Time: O(n) | Space: O(1) in-place
-*/
-vector<int> runningSum(vector<int>& nums) {
-    for (int i = 1; i < nums.size(); i++) {
-        nums[i] += nums[i - 1];
-    }
-    return nums;
-}
-
 
 /*
 PROBLEM 3: Find Pivot Index (LeetCode 724)

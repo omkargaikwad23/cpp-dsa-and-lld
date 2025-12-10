@@ -32,6 +32,7 @@ struct DSU {
         if (u == v) return false; // Already in the same component
         
         // Union by rank: attach smaller tree under larger tree
+        // larger rank means more nodes in the tree
         if (rank[u] > rank[v]) {
             // u's tree is taller -> v goes under u
             parent[v] = u;
@@ -42,7 +43,7 @@ struct DSU {
             parent[u] = v;
             size[v] += size[u];
         }
-        else {
+        else {  
             // Same rank -> pick u as root, increment its rank
             parent[v] = u;
             size[u] += size[v];
