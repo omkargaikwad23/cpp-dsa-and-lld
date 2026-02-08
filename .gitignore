@@ -5,3 +5,6 @@
 *.o
 *.obj
 .DS_Store
+solution/
+solution
+solution.cpp
