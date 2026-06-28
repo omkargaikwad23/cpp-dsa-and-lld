@@ -1,6 +1,6 @@
 ﻿# 📚 DSA & System Design Interview Prep
 
-A comprehensive collection of Data Structures, Algorithms, and LeetCode patterns organized for Google interview preparation.
+A comprehensive collection of Data Structures, Algorithms, and LeetCode patterns organized for coding interview preparation.
 
 ---
 
