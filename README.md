@@ -1,6 +1,17 @@
-﻿# 📚 DSA & System Design Interview Prep
+﻿# 📚 DSA & System Design Interview Prep (C++)
 
-A comprehensive collection of Data Structures, Algorithms, and LeetCode patterns organized for coding interview preparation.
+[![Stars](https://img.shields.io/github/stars/omkargaikwad23/cpp-dsa-and-lld?style=social)](https://github.com/omkargaikwad23/cpp-dsa-and-lld/stargazers)
+[![Forks](https://img.shields.io/github/forks/omkargaikwad23/cpp-dsa-and-lld?style=social)](https://github.com/omkargaikwad23/cpp-dsa-and-lld/network/members)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![C++](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://github.com/omkargaikwad23/cpp-dsa-and-lld/search?l=c%2B%2B)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+
+A clean, pattern-first collection of **Data Structures, Algorithms, and Low-Level Design (LLD)** in C++ — built while prepping for SDE interviews and used to land a Software Engineer role at Google.
+
+Every file is organized by **pattern**, not just by problem, so you learn the underlying technique once and reuse it across 5-10 LeetCode-style problems instead of memorizing solutions one by one.
+
+> 🇮🇳 If you're prepping for interviews in India or anywhere else, give this a ⭐ — it helps other engineers find it, and motivates more patterns to get added.
 
 ---
 
